@@ -11,10 +11,7 @@ Een Python FastAPI-service die voorspellingen levert voor inkomende data. Wordt 
 ## Installatie
 ```bash
 git clone https://github.com/TralaAI/fastapi.git
-cd tralaAI-fastapi
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-.\.venv\Scripts\activate   # Windows
+cd fastapi
 pip install -r requirements.txt
 ```
 ## Runnen
