@@ -1,7 +1,7 @@
-# fastapi
+# Fastapi
 
 **Beschrijving**  
-Een Python FastAPI-service die voorspellingen levert voor inkomende data. Wordt aangeroepen door de Core API.
+Een Python FastAPI-service die voorspellingen levert voor inkomende data. Wordt aangeroepen door de .NET API.
 
 ---
 
@@ -10,7 +10,7 @@ Een Python FastAPI-service die voorspellingen levert voor inkomende data. Wordt 
 
 ## Installatie
 ```bash
-git clone https://github.com/TralaAI/fastapi.git
+git clone https://github.com/TralaAI/Fastapi.git
 cd fastapi
 pip install -r requirements.txt
 ```
