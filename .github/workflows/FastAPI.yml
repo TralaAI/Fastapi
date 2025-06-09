@@ -32,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main'
+    env:
+      IMAGE_NAME: tralaai-fastapi
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
