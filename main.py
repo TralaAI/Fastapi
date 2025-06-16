@@ -12,7 +12,6 @@ class ModelInput(BaseModel):
     holiday: bool
     weather: int
 
-# ✅ Load model with joblib
 modelin = joblib.load("./AI/decision_tree.pkl")
 @app.post("/predict")
 def predict(inputs: List[ModelInput]):
@@ -30,3 +29,6 @@ def predict(inputs: List[ModelInput]):
     preds = modelin.predict(features)
 
     return {"predictions": preds.tolist()}
+
+
+# TODO May add endpoint to retrain the model on database data
