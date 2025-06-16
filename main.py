@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import pickle
+from typing import List
+import joblib 
 import numpy as np
 
 app = FastAPI()
@@ -11,21 +12,21 @@ class ModelInput(BaseModel):
     holiday: bool
     weather: int
 
-# Load once at startup
-with open("./AI/decision_tree.pkl", "rb") as modelin_file:
-    modelin = pickle.load(modelin_file)
-
+# ✅ Load model with joblib
+modelin = joblib.load("./AI/decision_tree.pkl")
 @app.post("/predict")
-def predict(input: ModelInput):
-    # pack features in the order your model expects
-    features = np.array([[
-        input.day_of_week,
-        input.month,
-        int(input.holiday),
-        input.weather
-    ]], dtype=np.float32)
+def predict(inputs: List[ModelInput]):
+    # Prepare features for prediction
+    features = np.array([
+        [
+            inp.day_of_week,
+            inp.month,
+            int(inp.holiday),
+            inp.weather
+        ] for inp in inputs
+    ], dtype=np.float32)
 
-    # run prediction
-    pred = modelin.predict(features)
+    # Make prediction
+    preds = modelin.predict(features)
 
-    return {"prediction": float(pred[0])}
+    return {"predictions": preds.tolist()}
