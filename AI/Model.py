@@ -1,10 +1,10 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
-from sklearn import tree
 import numpy as np
+import joblib as jb
 
-afval = pd.read_csv('../Data/afval_voorbeeld_3900.csv')
+afval = pd.read_csv('../Data/afval_voorbeeld_4800.csv')
 
 # Instead of detected_object being a class. I made their classes columns with integer values. Next step is to group them per time interval. 
 afval_encoded = pd.get_dummies(afval, columns=['detected_object'], dtype=int)
@@ -70,3 +70,5 @@ rmse_test = calculate_rmse(predict_test, y_test.values)
 
 print(f"Train RMSE: {rmse_train}")
 print(f"Test RMSE: {rmse_test}")
+
+jb.dump(dt, "decision_tree.pkl")
