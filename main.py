@@ -12,8 +12,8 @@ class ModelInput(BaseModel):
     weather: int
 
 # Load once at startup
-with open("./AI/decision_tree.pkl", "rb") as f:
-    model = pickle.load(f)
+with open("./AI/decision_tree.pkl", "rb") as modelin_file:
+    modelin = pickle.load(modelin_file)
 
 @app.post("/predict")
 def predict(input: ModelInput):
@@ -26,6 +26,6 @@ def predict(input: ModelInput):
     ]], dtype=np.float32)
 
     # run prediction
-    pred = model.predict(features)
+    pred = modelin.predict(features)
 
     return {"prediction": float(pred[0])}
