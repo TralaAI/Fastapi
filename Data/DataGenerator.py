@@ -30,12 +30,52 @@ holidays = {
 
 # Monthly average temperatures (°C)
 monthly_avg_temps = {
-    1: 3,  2: 4,  3: 7,  4: 10, 5: 15, 6: 18,
+    1: 3, 2: 4, 3: 7, 4: 10, 5: 15, 6: 18,
     7: 21, 8: 23, 9: 19, 10: 14, 11: 8, 12: 4
 }
 
+# Temperature bounds for realism (min, max) for each month
+month_temp_bounds = {
+    1: (-5, 8),
+    2: (-3, 9),
+    3: (0, 12),
+    4: (3, 16),
+    5: (8, 21),
+    6: (12, 25),
+    7: (15, 28),
+    8: (15, 28),
+    9: (10, 23),
+    10: (5, 18),
+    11: (0, 13),
+    12: (-3, 9)  
+}
+
+# Easy-to-adjust effect modifiers for weather and temperature
+WEATHER_EFFECTS = {
+    'stormy': -0.6,
+    'rainy': -0.4,
+    'cloudy': 0.3,
+    'misty': -0.1,
+    'sunny': 0.5,
+    'snowy': -0.6
+}
+
+TEMPERATURE_EFFECTS = {
+    'high': {
+        'threshold': 20,   # ≥ 20°C
+        'modifier': 0.4
+    },
+    'low': {
+        'threshold': 5,    # ≤ 5°C
+        'modifier': -0.4
+    },
+    'moderate': 0  # between high and low → neutral
+}
+
+
 def is_weekend(date):
     return date.weekday() >= 5
+
 
 def assign_weather(date):
     month = date.month
@@ -47,30 +87,41 @@ def assign_weather(date):
         probs = [0.2, 0.4, 0.3, 0.05, 0.05, 0.0]  # no snowy weather
     return np.random.choice(weather_types, p=probs)
 
+
 def assign_temperature(date):
     avg_temp = monthly_avg_temps[date.month]
-    std_dev = 3
-    return round(np.random.normal(loc=avg_temp, scale=std_dev))
+    min_temp, max_temp = month_temp_bounds[date.month]
+    std_dev = 2 if date.month in [12, 1, 2] else 3
+    temp = np.random.normal(loc=avg_temp, scale=std_dev)
+    temp = np.clip(temp, min_temp, max_temp)
+    return round(temp)
 
-def litter_rate(date, weather):
-    base_rate = 13
+
+def temperature_modifier(temperature):
+    if temperature >= TEMPERATURE_EFFECTS['high']['threshold']:
+        return TEMPERATURE_EFFECTS['high']['modifier']
+    elif temperature <= TEMPERATURE_EFFECTS['low']['threshold']:
+        return TEMPERATURE_EFFECTS['low']['modifier']
+    else:
+        return TEMPERATURE_EFFECTS['moderate']
+
+
+def litter_rate(date, weather, temperature):
+    base_rate = 15
     weekend_bonus = 0.3 if is_weekend(date) else 0
     holiday_bonus = 0.7 if date in holidays else 0
-    weather_effect = {
-        'stormy': -0.6,
-        'rainy': -0.4,
-        'cloudy': 0,
-        'misty': -0.1,
-        'sunny': 0.3,
-        'snowy': -0.6  # same as stormy
-    }
-    rate = base_rate * (1 + weekend_bonus + holiday_bonus + weather_effect.get(weather, 0))
+    weather_bonus = WEATHER_EFFECTS.get(weather, 0)
+    temp_bonus = temperature_modifier(temperature)
+    rate = base_rate * (1 + weekend_bonus + holiday_bonus + weather_bonus + temp_bonus)
     return max(1, int(rate))
+
 
 def pick_litter_type():
     litter_probs = [custom_litter_distribution[lt] for lt in litter_types]
     return np.random.choice(litter_types, p=litter_probs)
 
+
+# Generate dataset
 all_rows = []
 current_id = 1
 date_range = pd.date_range(start_date, end_date, freq='D')
@@ -79,7 +130,7 @@ for date in date_range:
     weather = assign_weather(date)
     temperature = assign_temperature(date)
     holiday_flag = 1 if date in holidays else 0
-    n_pieces = litter_rate(date, weather)
+    n_pieces = litter_rate(date, weather, temperature)
 
     for _ in range(n_pieces):
         random_seconds = random.randint(0, 86399)
@@ -97,5 +148,5 @@ for date in date_range:
         current_id += 1
 
 df = pd.DataFrame(all_rows)
-df.to_csv('generated_litter_data_2025_custom_distribution_with_temp_and_snow.csv', index=False)
-print("Dataset generated and saved as 'generated_litter_data_2025_custom_distribution_with_temp_and_snow.csv'")
+df.to_csv('generated_litter_data_2025_realistic_temps_weather.csv', index=False)
+print("Dataset generated and saved as 'generated_litter_data_2025_realistic_temps_weather.csv'")

@@ -6,7 +6,8 @@ import joblib as jb
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_PATH = BASE_DIR.parent / 'Data' / 'Example.csv'
+DATA_PATH = BASE_DIR.parent / 'Data' / 'Example_insane.csv'
+OUTPUT_PATH = BASE_DIR /'decision_tree.pkl'
 
 afval = pd.read_csv(DATA_PATH)
 
@@ -64,6 +65,7 @@ def calculate_rmse(predictions, actuals):
     return (((predictions - actuals) ** 2).sum() / len(actuals)) ** (1/2)
 
 
+
 #---------SCHOOL FUNCTIONS-----------
 
 predict_train = dt.predict(x_train)
@@ -78,4 +80,4 @@ rmse_test = calculate_rmse(predict_test, y_test.values)
 print(f"Train RMSE: {rmse_train}")
 print(f"Test RMSE: {rmse_test}")
 
-jb.dump(dt, "decision_tree.pkl")
+jb.dump(dt, OUTPUT_PATH)
