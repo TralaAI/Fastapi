@@ -1,13 +1,16 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeRegressor
+import graphviz
 import numpy as np
+import pandas as pd
 import joblib as jb
 from pathlib import Path
+from sklearn import tree
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_PATH = BASE_DIR.parent / 'Data' / 'Example_insane.csv'
-OUTPUT_PATH = BASE_DIR /'decision_tree.pkl'
+DATA_PATH = BASE_DIR.parent / 'Data' / 'Generated_Data.csv'
+OUTPUT_PATH = BASE_DIR /'random_forest.pkl'
 
 afval = pd.read_csv(DATA_PATH)
 
@@ -19,13 +22,13 @@ afval_encoded['timestamp'] = pd.to_datetime(afval_encoded['timestamp'])
 afval_encoded['date'] = afval_encoded['timestamp'].dt.date
 
 # Mapping the weather data. Rainy 1, Cloudy 2, Sunny 3, Stormy 4, Misty 5
-weather_mapping = {'rainy': 1, 'cloudy': 2, 'sunny': 3, 'stormy': 4, 'misty': 5, 'snowy':6}
+weather_mapping = {'snowy': 1, 'stormy': 2, 'rainy': 3, 'misty': 4, 'cloudy': 5, 'sunny':6}
 afval_encoded['weather'] = afval_encoded['weather'].map(weather_mapping)
 
 # Grouping my data per day
 daily_counts = afval_encoded.groupby('date').agg({
-    'holiday': lambda x: 1 if (x==1).any() else 0,  # total number of detections that are on holiday = fine
-    'weather': lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan,  # take most frequent weather (mode)
+    'holiday': lambda x: 1 if (x==1).any() else 0,  #
+    'weather': lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan, 
     'detected_object_glass': 'sum',
     'temperature_celsius': 'mean',
     'detected_object_metal': 'sum',
@@ -43,18 +46,21 @@ daily_counts['litter_total'] = daily_counts[
 daily_counts['date'] = pd.to_datetime(daily_counts['date'])
 daily_counts['day_of_week'] = daily_counts['date'].dt.dayofweek  
 daily_counts['month'] = daily_counts['date'].dt.month
+daily_counts['is_weekend'] = daily_counts['day_of_week'].apply(lambda x: 1 if x >= 5 else 0)
+
 
 print(daily_counts)
 features = ['detected_object_glass', 'detected_object_metal', 'detected_object_organic', 'detected_object_paper', 'detected_object_plastic']
 
 
-x = daily_counts[['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius']] # Our training features
-y = daily_counts[features]  # Our target variable
+x = daily_counts[['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius', 'is_weekend']] # Our training features
+y = daily_counts[features]  #target variable
 
 # Splitting the data into training and testing sets
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
 
-dt = DecisionTreeRegressor(max_depth=4)
+# dt = DecisionTreeRegressor(max_depth=4)
+dt = RandomForestRegressor(n_estimators=5, max_depth=3) 
 dt.fit(x_train, y_train)
 
 #---------SCHOOL FUNCTIONS-----------
@@ -64,9 +70,26 @@ def calculate_rmse(predictions, actuals):
     
     return (((predictions - actuals) ** 2).sum() / len(actuals)) ** (1/2)
 
+def plot_tree_regression(model, features):
+    # Generate plot data
+    output_path = BASE_DIR / "decision_tree"
+    dot_data = tree.export_graphviz(model, out_file=None, 
+                          feature_names=features,  
+                          filled=True, rounded=True,  
+                          special_characters=True)  
 
+    # Turn into graph using graphviz
+    graph = graphviz.Source(dot_data)  
+
+    # Write out a pdf
+    graph.render(output_path)
+
+    # Display in the notebook
+    return graph 
 
 #---------SCHOOL FUNCTIONS-----------
+# plot_tree_regression(dt, ['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius', 'is_weekend'])
+
 
 predict_train = dt.predict(x_train)
 predict_test = dt.predict(x_test)

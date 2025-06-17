@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import random
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+OUTPUT_PATH = BASE_DIR / 'Generated_Data.csv'
 
 # Parameters
 start_date = '2025-01-01'
@@ -52,24 +56,24 @@ month_temp_bounds = {
 
 # Easy-to-adjust effect modifiers for weather and temperature
 WEATHER_EFFECTS = {
-    'stormy': -0.6,
-    'rainy': -0.4,
-    'cloudy': 0.3,
-    'misty': -0.1,
-    'sunny': 0.5,
-    'snowy': -0.6
+    'stormy': -0.9,
+    'rainy': -0.5,
+    'cloudy': 0.4,
+    'misty': -0.2,
+    'sunny': 0.6,   # boost sunny to be 100% more litter
+    'snowy': -0.9
 }
 
 TEMPERATURE_EFFECTS = {
     'high': {
-        'threshold': 20,   # ≥ 20°C
-        'modifier': 0.4
+        'threshold': 20,
+        'modifier': 0.3 
     },
     'low': {
-        'threshold': 5,    # ≤ 5°C
-        'modifier': -0.4
+        'threshold': 5,
+        'modifier': -0.3
     },
-    'moderate': 0  # between high and low → neutral
+    'moderate': 0
 }
 
 
@@ -107,7 +111,7 @@ def temperature_modifier(temperature):
 
 
 def litter_rate(date, weather, temperature):
-    base_rate = 15
+    base_rate = 13
     weekend_bonus = 0.3 if is_weekend(date) else 0
     holiday_bonus = 0.7 if date in holidays else 0
     weather_bonus = WEATHER_EFFECTS.get(weather, 0)
@@ -148,5 +152,5 @@ for date in date_range:
         current_id += 1
 
 df = pd.DataFrame(all_rows)
-df.to_csv('generated_litter_data_2025_realistic_temps_weather.csv', index=False)
+df.to_csv(OUTPUT_PATH, index=False)
 print("Dataset generated and saved as 'generated_litter_data_2025_realistic_temps_weather.csv'")
