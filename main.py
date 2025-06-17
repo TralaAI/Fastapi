@@ -12,7 +12,16 @@ class ModelInput(BaseModel):
     holiday: bool
     weather: int
 
+class ModelRawData(BaseModel):
+    timestamp: str
+    type: str
+    holiday: bool
+    weather: str
+    temperature: int
+
 modelin = joblib.load("./AI/decision_tree.pkl")
+litter_types = ["plastic", "paper", "metal", "glass", "organic"]
+
 @app.post("/predict")
 def predict(inputs: List[ModelInput]):
     # Prepare features for prediction
@@ -28,7 +37,8 @@ def predict(inputs: List[ModelInput]):
     # Make prediction
     preds = modelin.predict(features)
 
-    return {"predictions": preds.tolist()}
-
+    return {"predictions": []}
 
 # TODO May add endpoint to retrain the model on database data
+
+# @app.post("/retrain")

@@ -4,7 +4,7 @@ from sklearn.tree import DecisionTreeRegressor
 import numpy as np
 import joblib as jb
 
-afval = pd.read_csv('../Data/afval_voorbeeld_4800.csv')
+afval = pd.read_csv('../Data/Example.csv')
 
 # Instead of detected_object being a class. I made their classes columns with integer values. Next step is to group them per time interval. 
 afval_encoded = pd.get_dummies(afval, columns=['detected_object'], dtype=int)
@@ -14,7 +14,7 @@ afval_encoded['timestamp'] = pd.to_datetime(afval_encoded['timestamp'])
 afval_encoded['date'] = afval_encoded['timestamp'].dt.date
 
 # Mapping the weather data. Rainy 1, Cloudy 2, Sunny 3, Stormy 4, Misty 5
-weather_mapping = {'rainy': 1, 'cloudy': 2, 'sunny': 3, 'stormy': 4, 'misty': 5}
+weather_mapping = {'rainy': 1, 'cloudy': 2, 'sunny': 3, 'stormy': 4, 'misty': 5, 'snowy':6}
 afval_encoded['weather'] = afval_encoded['weather'].map(weather_mapping)
 
 # Grouping my data per day
@@ -22,6 +22,7 @@ daily_counts = afval_encoded.groupby('date').agg({
     'holiday': lambda x: 1 if (x==1).any() else 0,  # total number of detections that are on holiday = fine
     'weather': lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan,  # take most frequent weather (mode)
     'detected_object_glass': 'sum',
+    'temperature_celsius': 'mean',
     'detected_object_metal': 'sum',
     'detected_object_organic': 'sum',
     'detected_object_paper': 'sum',
@@ -42,7 +43,7 @@ print(daily_counts)
 features = ['detected_object_glass', 'detected_object_metal', 'detected_object_organic', 'detected_object_paper', 'detected_object_plastic']
 
 
-x = daily_counts[['day_of_week', 'month', 'holiday', 'weather']] # Our training features
+x = daily_counts[['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius']] # Our training features
 y = daily_counts[features]  # Our target variable
 
 # Splitting the data into training and testing sets
@@ -57,6 +58,8 @@ def calculate_rmse(predictions, actuals):
         raise Exception("The amount of predictions did not equal the amount of actuals")
     
     return (((predictions - actuals) ** 2).sum() / len(actuals)) ** (1/2)
+
+
 #---------SCHOOL FUNCTIONS-----------
 
 predict_train = dt.predict(x_train)
