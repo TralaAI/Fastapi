@@ -111,7 +111,7 @@ def temperature_modifier(temperature):
 
 
 def litter_rate(date, weather, temperature):
-    base_rate = 13
+    base_rate = 15
     weekend_bonus = 0.3 if is_weekend(date) else 0
     holiday_bonus = 0.7 if date in holidays else 0
     weather_bonus = WEATHER_EFFECTS.get(weather, 0)
