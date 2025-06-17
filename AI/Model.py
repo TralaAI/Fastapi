@@ -3,8 +3,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 import numpy as np
 import joblib as jb
+from pathlib import Path
 
-afval = pd.read_csv('../Data/Example.csv')
+BASE_DIR = Path(__file__).resolve().parent
+DATA_PATH = BASE_DIR.parent / 'Data' / 'Example.csv'
+
+afval = pd.read_csv(DATA_PATH)
 
 # Instead of detected_object being a class. I made their classes columns with integer values. Next step is to group them per time interval. 
 afval_encoded = pd.get_dummies(afval, columns=['detected_object'], dtype=int)
