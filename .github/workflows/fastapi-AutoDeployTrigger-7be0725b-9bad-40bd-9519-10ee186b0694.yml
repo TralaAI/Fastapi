@@ -1,0 +1,48 @@
+name: Trigger auto deployment for fastapi
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/fastapi-AutoDeployTrigger-7be0725b-9bad-40bd-9519-10ee186b0694.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.FASTAPI_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.FASTAPI_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.FASTAPI_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/dockerfile
+          _dockerfilePathKey_: _dockerfilePath_
+          registryUrl: tralaaidocker-f6fxesc2f4fhg5gj.azurecr.io
+          registryUsername: ${{ secrets.FASTAPI_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.FASTAPI_REGISTRY_PASSWORD }}
+          containerAppName: fastapi
+          resourceGroup: L1Q4-TralaAI
+          imageToBuild: tralaaidocker-f6fxesc2f4fhg5gj.azurecr.io/fastapi:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
