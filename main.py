@@ -8,8 +8,8 @@ import pandas as pd
 import subprocess
 
 BASE_DIR = Path(__file__).resolve().parent
-CSV_PATH = BASE_DIR / 'Data' / 'Example_insane.csv'
-MODEL_PATH = BASE_DIR / 'AI' / 'Model.py'
+
+MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
 
 app = FastAPI()
 
@@ -35,7 +35,7 @@ class DataEnrichment(BaseModel):
 
 class RetrainRequest(BaseModel):
     data: List[DataEnrichment]
-    parameter: str
+    cameraLocation: str
 
 litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 
@@ -46,19 +46,19 @@ def predict(request: ModelInputRequest):
 
     match modelIndex:
         case '0':
-            model_path = BASE_DIR / 'AI_Models' / 'developing_phase_tree.pkl'
+            pkl_path = BASE_DIR / 'AI_Models' / 'developing_phase_tree.pkl'
         case '1':
-            model_path = BASE_DIR / 'AI_Models' / 'sensoring_group_tree.pkl'
+            pkl_path = BASE_DIR / 'AI_Models' / 'sensoring_group_tree.pkl'
         case '2':
-            model_path = BASE_DIR / 'AI_Models' / 'generated_city_tree.pkl'
+            pkl_path = BASE_DIR / 'AI_Models' / 'generated_city_tree.pkl'
         case '3':
-            model_path = BASE_DIR / 'AI_Models' / 'generated_industrial_tree.pkl'
+            pkl_path = BASE_DIR / 'AI_Models' / 'generated_industrial_tree.pkl'
         case '4':
-            model_path = BASE_DIR / 'AI_Models' / 'generated_suburbs_tree.pkl'
+            pkl_path = BASE_DIR / 'AI_Models' / 'generated_suburbs_tree.pkl'
         case _:
             return {"error": "Invalid modelIndex"}
 
-    modelin = joblib.load(model_path)
+    modelin = joblib.load(pkl_path)
 
     features = np.array([
         [
@@ -85,7 +85,21 @@ def predict(request: ModelInputRequest):
 @app.post("/retrain")
 def retrain_model(request: RetrainRequest):
     data = request.data
-    parameter = request.parameter 
+    cameraLocation = request.cameraLocation 
+
+    match cameraLocation:
+        case '0':
+            CSV_PATH = BASE_DIR / 'Data' / 'developing_data.csv'
+        case '1':
+            CSV_PATH = BASE_DIR / 'Data' / 'sensoring_data.csv'
+        case '2':
+            CSV_PATH = BASE_DIR / 'Data' / 'city_data.csv'
+        case '3':
+            CSV_PATH = BASE_DIR / 'Data' / 'industrial_data.csv'
+        case '4':
+            CSV_PATH = BASE_DIR / 'Data' / 'suburbs_data.csv'
+        case _:
+            return {"error": "Invalid cameraLocation"}
     
     df_existing = pd.read_csv(CSV_PATH)
     last_id = df_existing['id'].max()
@@ -99,7 +113,7 @@ def retrain_model(request: RetrainRequest):
     if MODEL_PATH.exists():
         try:
             result = subprocess.run(
-                ['python3', str(MODEL_PATH), str(parameter)], 
+                ['python3', str(MODEL_PATH), str(cameraLocation)], 
                 capture_output=True,
                 text=True,
                 check=True
