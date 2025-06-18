@@ -7,7 +7,6 @@ from fpdf import FPDF
 from pathlib import Path
 from sklearn import tree
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sqlalchemy import create_engine
 import os
@@ -15,7 +14,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
 
-parameter = '0'
+parameter = '4'
 
 if len(sys.argv) > 1:
     parameter = sys.argv[1]
@@ -59,74 +58,68 @@ engine = create_engine(connection_string)
 query = f"SELECT * FROM litters WHERE location='{LOCATION}'" 
 afval = pd.read_sql(query, engine)
 
-# Instead of detected_object being a class. I made their classes columns with integer values. Next step is to group them per time interval. 
-afval_encoded = pd.get_dummies(afval, columns=['detected_object'], dtype=int)
+# One-hot encode 'Type' column into separate columns (glass, metal, etc.)
+afval_encoded = pd.get_dummies(afval, columns=['Type'], dtype=int)
 
 # Convert timestamp to datetime and extract date
-afval_encoded['timestamp'] = pd.to_datetime(afval_encoded['timestamp'])
+afval_encoded['timestamp'] = pd.to_datetime(afval_encoded['TimeStamp'])
 afval_encoded['date'] = afval_encoded['timestamp'].dt.date
 
-# Mapping the weather data. Rainy 1, Cloudy 2, Sunny 3, Stormy 4, Misty 5
-weather_mapping = {'snowy': 1, 'stormy': 2, 'rainy': 3, 'misty': 4, 'cloudy': 5, 'sunny':6}
-afval_encoded['weather'] = afval_encoded['weather'].map(weather_mapping)
+# Mapping the weather data to numeric values
+weather_mapping = {'snowy': 1, 'stormy': 2, 'rainy': 3, 'misty': 4, 'cloudy': 5, 'sunny': 6}
+afval_encoded['weather'] = afval_encoded['Weather'].map(weather_mapping)
 
-# Grouping my data per day
+# Grouping data per day using numeric weather column, summing litter types, averaging temperature
 daily_counts = afval_encoded.groupby('date').agg({
-    'holiday': lambda x: 1 if (x==1).any() else 0,  #
-    'weather': lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan, 
-    'detected_object_glass': 'sum',
-    'temperature_celsius': 'mean',
-    'detected_object_metal': 'sum',
-    'detected_object_organic': 'sum',
-    'detected_object_paper': 'sum',
-    'detected_object_plastic': 'sum'
+    'IsHoliday': lambda x: 1 if (x == 1).any() else 0,
+    'weather': lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan,
+    'Type_glass': 'sum',
+    'Temperature': 'mean',
+    'Type_metal': 'sum',
+    'Type_organic': 'sum',
+    'Type_paper': 'sum',
+    'Type_plastic': 'sum'
 }).reset_index()
 
-#Adding columns with summed litter counts
+# Add total litter count column
 daily_counts['litter_total'] = daily_counts[
-    ['detected_object_glass', 'detected_object_metal', 'detected_object_organic', 'detected_object_paper', 'detected_object_plastic']
+    ['Type_glass', 'Type_metal', 'Type_organic', 'Type_paper', 'Type_plastic']
 ].sum(axis=1)
 
-# Convert 'date' back to datetime to extract day_of_week and month features
+# Convert 'date' back to datetime to extract features
 daily_counts['date'] = pd.to_datetime(daily_counts['date'])
-daily_counts['day_of_week'] = daily_counts['date'].dt.dayofweek  
+daily_counts['day_of_week'] = daily_counts['date'].dt.dayofweek
 daily_counts['month'] = daily_counts['date'].dt.month
 daily_counts['is_weekend'] = daily_counts['day_of_week'].apply(lambda x: 1 if x >= 5 else 0)
 
+# Define features and target
+features = ['Type_glass', 'Type_metal', 'Type_organic', 'Type_paper', 'Type_plastic']
 
-# print(daily_counts)
-features = ['detected_object_glass', 'detected_object_metal', 'detected_object_organic', 'detected_object_paper', 'detected_object_plastic']
+x = daily_counts[['day_of_week', 'month', 'IsHoliday', 'weather', 'Temperature', 'is_weekend']]
+y = daily_counts[features]
 
-
-x = daily_counts[['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius', 'is_weekend']] # Our training features
-y = daily_counts[features]  #target variable
-
-# Splitting the data into training and testing sets
+# Split dataset
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
 
-# dt = DecisionTreeRegressor(max_depth=4)
-dt = RandomForestRegressor(n_estimators=5, max_depth=3) 
+# Initialize and fit model
+dt = RandomForestRegressor(n_estimators=5, max_depth=3)
 dt.fit(x_train, y_train)
 
-#---------SCHOOL FUNCTIONS-----------
+# --------- SCHOOL FUNCTIONS -----------
 def calculate_rmse(predictions, actuals):
-    if(len(predictions) != len(actuals)):
+    if len(predictions) != len(actuals):
         raise Exception("The amount of predictions did not equal the amount of actuals")
-    
-    return (((predictions - actuals) ** 2).sum() / len(actuals)) ** (1/2)
+    return (((predictions - actuals) ** 2).sum() / len(actuals)) ** 0.5
 
 def plot_tree_regression(model, features, output_file=DRAW_PATH):
     if not hasattr(model, 'estimators_'):
         raise ValueError("The model does not have estimators_ attribute. Is it a RandomForestRegressor?")
     
     pdf = FPDF()
-
     output_path = Path(output_file)
-    # If output_file is just a filename, prepend BASE_DIR (or wherever you want)
     if not output_path.is_absolute():
         output_path = BASE_DIR / output_path
     
-    # Remove extension if present (e.g. '.pdf' or anything)
     base_path = output_path.with_suffix('')
 
     for i, tree_model in enumerate(model.estimators_):
@@ -140,32 +133,25 @@ def plot_tree_regression(model, features, output_file=DRAW_PATH):
         )
         
         graph = graphviz.Source(dot_data)
-        
         image_file = base_path.with_name(f"{base_path.name}_{i+1}.png")
-
         graph.render(filename=str(image_file.with_suffix('')), format='png')  
         
         pdf.add_page()
-        pdf.image(str(image_file), x=10, y=10, w=180)  # no extra .png here!
+        pdf.image(str(image_file), x=10, y=10, w=180)
 
     pdf.output(str(output_path.with_suffix('.pdf')))
-
     return graph
 
-#---------SCHOOL FUNCTIONS-----------
-# plot_tree_regression(dt, ['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius', 'is_weekend'])
-
-
+# Predictions
 predict_train = dt.predict(x_train)
 predict_test = dt.predict(x_test)
 
-# print(predict_train)
-# print(predict_test)
-
+# Calculate RMSE
 rmse_train = calculate_rmse(predict_train, y_train.values)
 rmse_test = calculate_rmse(predict_test, y_test.values)
 
 print(f"Train RMSE: {rmse_train}")
 print(f"Test RMSE: {rmse_test}")
 
+# Save the trained model
 jb.dump(dt, OUTPUT_PATH)
