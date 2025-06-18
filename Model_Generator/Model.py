@@ -1,4 +1,5 @@
 import graphviz
+import sys
 import numpy as np
 import pandas as pd
 import joblib as jb
@@ -9,8 +10,32 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_PATH = BASE_DIR.parent / 'Data' / 'Generated_Data.csv'
-OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' /'random_forest.pkl'
+
+parameter = '0'
+
+if len(sys.argv) > 1:
+    parameter = sys.argv[1]
+
+match parameter:
+    case '0':
+        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'developing_phase_tree.pkl'
+        DATA_PATH = BASE_DIR.parent / 'Data' / 'developing_data.csv'
+    case '1':
+        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'sensoring_group_tree.pkl'
+        DATA_PATH = BASE_DIR.parent / 'Data' / 'sensoring_data.csv'
+    case '2':
+        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_city_tree.pkl'
+        DATA_PATH = BASE_DIR.parent / 'Data' / 'city_data.csv'
+    case '3':
+        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_industrial_tree.pkl'
+        DATA_PATH = BASE_DIR.parent / 'Data' / 'industrial_data.csv'
+    case '4':
+        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_suburbs_tree.pkl'
+        DATA_PATH = BASE_DIR.parent / 'Data' / 'suburbs_data.csv'
+    case _:
+        print(f"Invalid parameter: {parameter}")
+        sys.exit(1)
+
 
 afval = pd.read_csv(DATA_PATH)
 

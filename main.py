@@ -35,6 +35,10 @@ class DataEnrichment(BaseModel):
     weather: str
     temperature_celsius: int
 
+class RetrainRequest(BaseModel):
+    data: List[DataEnrichment]
+    parameter: str
+
 modelin = joblib.load("./AI/decision_tree.pkl")
 litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 
@@ -63,24 +67,23 @@ def predict(inputs: List[ModelInput]):
     return {"predictions": predictions}
 
 @app.post("/retrain")
-def retrain_model(data: List[DataEnrichment]):
+def retrain_model(request: RetrainRequest):
+    data = request.data
+    parameter = request.parameter 
+    
     df_existing = pd.read_csv(CSV_PATH)
     last_id = df_existing['id'].max()
 
     new_data = pd.DataFrame([item.dict() for item in data])
-
     new_data['holiday'] = new_data['holiday'].astype(int)
-
     new_data.insert(0, 'id', range(last_id + 1, last_id + 1 + len(new_data)))
-
     new_data = new_data[['id', 'detected_object', 'timestamp', 'weather', 'temperature_celsius', 'holiday']]
-
     new_data.to_csv(CSV_PATH, mode='a', index=False, header=False)
-    
+
     if MODEL_PATH.exists():
         try:
             result = subprocess.run(
-                ['python3', str(MODEL_PATH)],
+                ['python3', str(MODEL_PATH), str(parameter)], 
                 capture_output=True,
                 text=True,
                 check=True
@@ -95,4 +98,8 @@ def retrain_model(data: List[DataEnrichment]):
     else:
         exec_output = {"error": "Model.py not found"}
 
-    return {"status": "success", "added_rows": len(new_data)}
+    return {
+        "status": "success",
+        "added_rows": len(new_data),
+        "exec_output": exec_output
+    }
