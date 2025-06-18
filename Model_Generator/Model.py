@@ -21,23 +21,23 @@ match parameter:
     case '0':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'developing_phase_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Developing' / 'developing_phase_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / 'developing_data.csv'
+        DATA_PATH = BASE_DIR.parent / 'Data' / '0_developing_data.csv'
     case '1':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'sensoring_group_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Sensoring' / 'sensoring_group_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / 'sensoring_data.csv'
+        DATA_PATH = BASE_DIR.parent / 'Data' / '1_sensoring_data.csv'
     case '2':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_city_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_City' / 'generated_city_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / 'city_data.csv'
+        DATA_PATH = BASE_DIR.parent / 'Data' / '2_city_data.csv'
     case '3':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_industrial_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Industrial' / 'generated_industrial_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / 'industrial_data.csv'
+        DATA_PATH = BASE_DIR.parent / 'Data' / '3_industrial_data.csv'
     case '4':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_suburbs_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Suburbs' / 'generated_suburbs_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / 'suburbs_data.csv'
+        DATA_PATH = BASE_DIR.parent / 'Data' / '4_suburbs_data.csv'
     case _:
         print(f"Invalid parameter: {parameter}")
         sys.exit(1)

@@ -89,15 +89,15 @@ def retrain_model(request: RetrainRequest):
 
     match cameraLocation:
         case '0':
-            CSV_PATH = BASE_DIR / 'Data' / 'developing_data.csv'
+            CSV_PATH = BASE_DIR / 'Data' / '0_developing_data.csv'
         case '1':
-            CSV_PATH = BASE_DIR / 'Data' / 'sensoring_data.csv'
+            CSV_PATH = BASE_DIR / 'Data' / '1_sensoring_data.csv'
         case '2':
-            CSV_PATH = BASE_DIR / 'Data' / 'city_data.csv'
+            CSV_PATH = BASE_DIR / 'Data' / '2_city_data.csv'
         case '3':
-            CSV_PATH = BASE_DIR / 'Data' / 'industrial_data.csv'
+            CSV_PATH = BASE_DIR / 'Data' / '3_industrial_data.csv'
         case '4':
-            CSV_PATH = BASE_DIR / 'Data' / 'suburbs_data.csv'
+            CSV_PATH = BASE_DIR / 'Data' / '4_suburbs_data.csv'
         case _:
             return {"error": "Invalid cameraLocation"}
     
