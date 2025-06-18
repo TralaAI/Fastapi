@@ -24,23 +24,23 @@ match parameter:
     case '0':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'developing_phase_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Developing' / 'developing_phase_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / '0_developing_data.csv'
+        DATA_PATH = 'development'
     case '1':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'sensoring_group_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Sensoring' / 'sensoring_group_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / '1_sensoring_data.csv'
+        DATA_PATH = 'sensoring'
     case '2':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_city_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_City' / 'generated_city_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / '2_city_data.csv'
+        DATA_PATH = 'city'
     case '3':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_industrial_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Industrial' / 'generated_industrial_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / '3_industrial_data.csv'
+        DATA_PATH = 'industrial'
     case '4':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_suburbs_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Suburbs' / 'generated_suburbs_tree'
-        DATA_PATH = BASE_DIR.parent / 'Data' / '4_suburbs_data.csv'
+        DATA_PATH = 'suburbs'
     case _:
         print(f"Invalid parameter: {parameter}")
         sys.exit(1)
@@ -56,7 +56,7 @@ connection_string = os.getenv("connStr")
 engine = create_engine(connection_string)
 
 # Query data from the SQL Server database
-query = "SELECT * FROM afval_data"  # TODO Replace 'afval_data' with actual table name with all the data
+query = f"SELECT * FROM Litters WHERE location={DATA_PATH}"  # TODO Replace 'afval_data' with actual table name with all the data
 afval = pd.read_sql(query, engine)
 
 # Instead of detected_object being a class. I made their classes columns with integer values. Next step is to group them per time interval. 
