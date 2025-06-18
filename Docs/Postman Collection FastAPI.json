@@ -1,0 +1,46 @@
+{
+	"info": {
+		"_postman_id": "82a3733a-4eba-425e-96c4-18cd61ae4f05",
+		"name": "FastApi-Model",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "42228330"
+	},
+	"item": [
+		{
+			"name": "Get Prediction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"modelIndex\": \"0\",\r\n  \"inputs\": [\r\n    {\r\n      \"day_of_week\": 1,\r\n      \"month\": 6,\r\n      \"holiday\": false,\r\n      \"weather\": 2,\r\n      \"temperature_celcius\": 20,\r\n      \"is_weekend\": false,\r\n      \"label\": \"day1\"\r\n    },\r\n    {\r\n      \"day_of_week\": 2,\r\n      \"month\": 6,\r\n      \"holiday\": false,\r\n      \"weather\": 3,\r\n      \"temperature_celcius\": 19,\r\n      \"is_weekend\": false,\r\n      \"label\": \"day2\"\r\n    },\r\n    {\r\n      \"day_of_week\": 5,\r\n      \"month\": 6,\r\n      \"holiday\": true,\r\n      \"weather\": 4,\r\n      \"temperature_celcius\": 22,\r\n      \"is_weekend\": true,\r\n      \"label\": \"day3\"\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8000/predict"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrain model",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"cameraLocation\": \"0\",\r\n  \"data\": [\r\n    {\r\n      \"timestamp\": \"2025-06-17 10:00:00\",\r\n      \"detected_object\": \"plastic\",\r\n      \"holiday\": false,\r\n      \"weather\": \"sunny\",\r\n      \"temperature_celsius\": 21\r\n    },\r\n    {\r\n      \"timestamp\": \"2025-06-17 12:30:00\",\r\n      \"detected_object\": \"glass\",\r\n      \"holiday\": false,\r\n      \"weather\": \"cloudy\",\r\n      \"temperature_celsius\": 20\r\n    },\r\n    {\r\n      \"timestamp\": \"2025-06-17 15:00:00\",\r\n      \"detected_object\": \"paper\",\r\n      \"holiday\": true,\r\n      \"weather\": \"rain\",\r\n      \"temperature_celsius\": 18\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8000/retrain"
+			},
+			"response": []
+		}
+	]
+}
