@@ -1,0 +1,33 @@
+digraph Tree {
+node [shape=box, style="filled, rounded", color="black", fontname="helvetica"] ;
+edge [fontname="helvetica"] ;
+0 [label=<weather &le; 4.5<br/>squared_error = 6.853<br/>samples = 160<br/>value = [[2.341]<br/>[2.004]<br/>[3.318]<br/>[3.251]<br/>[6.306]]>, fillcolor="#ffffff"] ;
+1 [label=<weather &le; 2.5<br/>squared_error = 2.166<br/>samples = 57<br/>value = [[0.882]<br/>[0.763]<br/>[1.731]<br/>[1.183]<br/>[2.161]]>, fillcolor="#eda674"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label=<temperature_celsius &le; 19.0<br/>squared_error = 0.476<br/>samples = 18<br/>value = [[0.107]<br/>[0.179]<br/>[0.393]<br/>[0.357]<br/>[0.607]]>, fillcolor="#e68642"] ;
+1 -> 2 ;
+3 [label=<squared_error = 0.189<br/>samples = 16<br/>value = [[0.077]<br/>[0.192]<br/>[0.308]<br/>[0.115]<br/>[0.5]]>, fillcolor="#e58139"] ;
+2 -> 3 ;
+4 [label=<squared_error = 1.35<br/>samples = 2<br/>value = [[0.5]<br/>[0.0]<br/>[1.5]<br/>[3.5]<br/>[2.0]]>, fillcolor="#ea975b"] ;
+2 -> 4 ;
+5 [label=<temperature_celsius &le; 22.5<br/>squared_error = 2.176<br/>samples = 39<br/>value = [[1.215]<br/>[1.015]<br/>[2.308]<br/>[1.538]<br/>[2.831]]>, fillcolor="#eda774"] ;
+1 -> 5 ;
+6 [label=<squared_error = 1.877<br/>samples = 36<br/>value = [[1.103]<br/>[1.086]<br/>[1.914]<br/>[1.379]<br/>[2.569]]>, fillcolor="#eca16b"] ;
+5 -> 6 ;
+7 [label=<squared_error = 0.547<br/>samples = 3<br/>value = [[2.143]<br/>[0.429]<br/>[5.571]<br/>[2.857]<br/>[5.0]]>, fillcolor="#e68844"] ;
+5 -> 7 ;
+8 [label=<temperature_celsius &le; 6.5<br/>squared_error = 4.548<br/>samples = 103<br/>value = [[3.179]<br/>[2.716]<br/>[4.228]<br/>[4.438]<br/>[8.685]]>, fillcolor="#f6d3bb"] ;
+0 -> 8 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+9 [label=<weather &le; 5.5<br/>squared_error = 3.436<br/>samples = 22<br/>value = [[2.526]<br/>[1.684]<br/>[2.658]<br/>[2.789]<br/>[9.211]]>, fillcolor="#f2be99"] ;
+8 -> 9 ;
+10 [label=<squared_error = 3.006<br/>samples = 15<br/>value = [[2.958]<br/>[1.625]<br/>[2.708]<br/>[2.833]<br/>[8.083]]>, fillcolor="#f0b68d"] ;
+9 -> 10 ;
+11 [label=<squared_error = 2.81<br/>samples = 7<br/>value = [[1.786]<br/>[1.786]<br/>[2.571]<br/>[2.714]<br/>[11.143]]>, fillcolor="#efb387"] ;
+9 -> 11 ;
+12 [label=<month &le; 10.5<br/>squared_error = 4.332<br/>samples = 81<br/>value = [[3.379]<br/>[3.032]<br/>[4.71]<br/>[4.944]<br/>[8.524]]>, fillcolor="#f5cfb4"] ;
+8 -> 12 ;
+13 [label=<squared_error = 4.228<br/>samples = 76<br/>value = [[3.296]<br/>[2.957]<br/>[4.835]<br/>[4.957]<br/>[8.713]]>, fillcolor="#f5cdb1"] ;
+12 -> 13 ;
+14 [label=<squared_error = 3.412<br/>samples = 5<br/>value = [[4.444]<br/>[4.0]<br/>[3.111]<br/>[4.778]<br/>[6.111]]>, fillcolor="#f2be99"] ;
+12 -> 14 ;
+}

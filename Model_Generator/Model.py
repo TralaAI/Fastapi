@@ -1,12 +1,13 @@
-import graphviz
 import sys
+import graphviz
 import numpy as np
 import pandas as pd
 import joblib as jb
+from fpdf import FPDF
 from pathlib import Path
 from sklearn import tree
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -19,18 +20,23 @@ if len(sys.argv) > 1:
 match parameter:
     case '0':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'developing_phase_tree.pkl'
+        DRAW_PATH = BASE_DIR / 'Plot_Developing' / 'developing_phase_tree'
         DATA_PATH = BASE_DIR.parent / 'Data' / 'developing_data.csv'
     case '1':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'sensoring_group_tree.pkl'
+        DRAW_PATH = BASE_DIR / 'Plot_Sensoring' / 'sensoring_group_tree'
         DATA_PATH = BASE_DIR.parent / 'Data' / 'sensoring_data.csv'
     case '2':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_city_tree.pkl'
+        DRAW_PATH = BASE_DIR / 'Plot_City' / 'generated_city_tree'
         DATA_PATH = BASE_DIR.parent / 'Data' / 'city_data.csv'
     case '3':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_industrial_tree.pkl'
+        DRAW_PATH = BASE_DIR / 'Plot_Industrial' / 'generated_industrial_tree'
         DATA_PATH = BASE_DIR.parent / 'Data' / 'industrial_data.csv'
     case '4':
         OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_suburbs_tree.pkl'
+        DRAW_PATH = BASE_DIR / 'Plot_Suburbs' / 'generated_suburbs_tree'
         DATA_PATH = BASE_DIR.parent / 'Data' / 'suburbs_data.csv'
     case _:
         print(f"Invalid parameter: {parameter}")
@@ -95,25 +101,45 @@ def calculate_rmse(predictions, actuals):
     
     return (((predictions - actuals) ** 2).sum() / len(actuals)) ** (1/2)
 
-def plot_tree_regression(model, features):
-    # Generate plot data
-    output_path = BASE_DIR / "decision_tree"
-    dot_data = tree.export_graphviz(model, out_file=None, 
-                          feature_names=features,  
-                          filled=True, rounded=True,  
-                          special_characters=True)  
+def plot_tree_regression(model, features, output_file=DRAW_PATH):
+    if not hasattr(model, 'estimators_'):
+        raise ValueError("The model does not have estimators_ attribute. Is it a RandomForestRegressor?")
+    
+    pdf = FPDF()
 
-    # Turn into graph using graphviz
-    graph = graphviz.Source(dot_data)  
+    output_path = Path(output_file)
+    # If output_file is just a filename, prepend BASE_DIR (or wherever you want)
+    if not output_path.is_absolute():
+        output_path = BASE_DIR / output_path
+    
+    # Remove extension if present (e.g. '.pdf' or anything)
+    base_path = output_path.with_suffix('')
 
-    # Write out a pdf
-    graph.render(output_path)
+    for i, tree_model in enumerate(model.estimators_):
+        dot_data = tree.export_graphviz(
+            tree_model,
+            out_file=None,
+            feature_names=features,
+            filled=True,
+            rounded=True,
+            special_characters=True
+        )
+        
+        graph = graphviz.Source(dot_data)
+        
+        image_file = base_path.with_name(f"{base_path.name}_{i+1}.png")
 
-    # Display in the notebook
-    return graph 
+        graph.render(filename=str(image_file.with_suffix('')), format='png')  
+        
+        pdf.add_page()
+        pdf.image(str(image_file), x=10, y=10, w=180)  # no extra .png here!
+
+    pdf.output(str(output_path.with_suffix('.pdf')))
+
+    return graph
 
 #---------SCHOOL FUNCTIONS-----------
-# plot_tree_regression(dt, ['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius', 'is_weekend'])
+plot_tree_regression(dt, ['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius', 'is_weekend'])
 
 
 predict_train = dt.predict(x_train)

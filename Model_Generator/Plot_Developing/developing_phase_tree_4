@@ -1,0 +1,33 @@
+digraph Tree {
+node [shape=box, style="filled, rounded", color="black", fontname="helvetica"] ;
+edge [fontname="helvetica"] ;
+0 [label=<weather &le; 4.5<br/>squared_error = 6.51<br/>samples = 150<br/>value = [[2.431]<br/>[2.247]<br/>[3.753]<br/>[3.471]<br/>[6.624]]>, fillcolor="#ffffff"] ;
+1 [label=<weather &le; 3.5<br/>squared_error = 2.466<br/>samples = 52<br/>value = [[0.886]<br/>[1.034]<br/>[2.023]<br/>[1.489]<br/>[2.591]]>, fillcolor="#efb184"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label=<temperature_celsius &le; 7.0<br/>squared_error = 1.588<br/>samples = 38<br/>value = [[0.635]<br/>[0.825]<br/>[1.556]<br/>[1.222]<br/>[1.746]]>, fillcolor="#eba069"] ;
+1 -> 2 ;
+3 [label=<squared_error = 0.749<br/>samples = 16<br/>value = [[0.391]<br/>[0.174]<br/>[1.217]<br/>[0.391]<br/>[0.783]]>, fillcolor="#e88f50"] ;
+2 -> 3 ;
+4 [label=<squared_error = 1.668<br/>samples = 22<br/>value = [[0.775]<br/>[1.2]<br/>[1.75]<br/>[1.7]<br/>[2.3]]>, fillcolor="#eca16c"] ;
+2 -> 4 ;
+5 [label=<temperature_celsius &le; 13.5<br/>squared_error = 2.71<br/>samples = 14<br/>value = [[1.52]<br/>[1.56]<br/>[3.2]<br/>[2.16]<br/>[4.72]]>, fillcolor="#f0b58b"] ;
+1 -> 5 ;
+6 [label=<squared_error = 2.051<br/>samples = 7<br/>value = [[1.25]<br/>[1.917]<br/>[2.917]<br/>[1.5]<br/>[3.0]]>, fillcolor="#eda977"] ;
+5 -> 6 ;
+7 [label=<squared_error = 2.014<br/>samples = 7<br/>value = [[1.769]<br/>[1.231]<br/>[3.462]<br/>[2.769]<br/>[6.308]]>, fillcolor="#eda876"] ;
+5 -> 7 ;
+8 [label=<temperature_celsius &le; 5.5<br/>squared_error = 4.29<br/>samples = 98<br/>value = [[3.246]<br/>[2.886]<br/>[4.665]<br/>[4.515]<br/>[8.749]]>, fillcolor="#f6d4bb"] ;
+0 -> 8 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+9 [label=<is_weekend &le; 0.5<br/>squared_error = 2.15<br/>samples = 11<br/>value = [[2.591]<br/>[1.5]<br/>[3.0]<br/>[2.091]<br/>[8.227]]>, fillcolor="#eeab7a"] ;
+8 -> 9 ;
+10 [label=<squared_error = 1.771<br/>samples = 10<br/>value = [[2.571]<br/>[1.571]<br/>[3.0]<br/>[2.095]<br/>[7.905]]>, fillcolor="#eca36f"] ;
+9 -> 10 ;
+11 [label=<squared_error = 0.0<br/>samples = 1<br/>value = [[3.0]<br/>[0.0]<br/>[3.0]<br/>[2.0]<br/>[15.0]]>, fillcolor="#e58139"] ;
+9 -> 11 ;
+12 [label=<is_weekend &le; 0.5<br/>squared_error = 4.221<br/>samples = 87<br/>value = [[3.345]<br/>[3.097]<br/>[4.917]<br/>[4.883]<br/>[8.828]]>, fillcolor="#f6d3b9"] ;
+8 -> 12 ;
+13 [label=<squared_error = 4.273<br/>samples = 62<br/>value = [[3.09]<br/>[3.17]<br/>[4.69]<br/>[4.33]<br/>[8.56]]>, fillcolor="#f6d4bb"] ;
+12 -> 13 ;
+14 [label=<squared_error = 3.39<br/>samples = 25<br/>value = [[3.911]<br/>[2.933]<br/>[5.422]<br/>[6.111]<br/>[9.422]]>, fillcolor="#f3c3a0"] ;
+12 -> 14 ;
+}
