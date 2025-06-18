@@ -56,7 +56,7 @@ connection_string = os.getenv("connStr")
 engine = create_engine(connection_string)
 
 # Query data from the SQL Server database
-query = f"SELECT * FROM dbo.rang WHERE location='{LOCATION}'" 
+query = f"SELECT * FROM litters WHERE location='{LOCATION}'" 
 afval = pd.read_sql(query, engine)
 
 # Instead of detected_object being a class. I made their classes columns with integer values. Next step is to group them per time interval. 
