@@ -21,12 +21,9 @@ class ModelInput(BaseModel):
     temperature_celcius: int
     label: str
 
-class ModelRawData(BaseModel):
-    timestamp: str
-    type: str
-    holiday: bool
-    weather: str
-    temperature: int
+class ModelInputRequest(BaseModel):
+    inputs: List[ModelInput]
+    parameter: str
 
 class DataEnrichment(BaseModel):
     timestamp: str
@@ -39,11 +36,29 @@ class RetrainRequest(BaseModel):
     data: List[DataEnrichment]
     parameter: str
 
-modelin = joblib.load("./AI/decision_tree.pkl")
 litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 
 @app.post("/predict")
-def predict(inputs: List[ModelInput]):
+def predict(request: ModelInputRequest):
+    inputs = request.inputs
+    parameter = request.parameter
+
+    match parameter:
+        case '0':
+            model_path = BASE_DIR / 'AI_Models' / 'developing_phase_tree.pkl'
+        case '1':
+            model_path = BASE_DIR / 'AI_Models' / 'sensoring_group_tree.pkl'
+        case '2':
+            model_path = BASE_DIR / 'AI_Models' / 'generated_city_tree.pkl'
+        case '3':
+            model_path = BASE_DIR / 'AI_Models' / 'generated_industrial_tree.pkl'
+        case '4':
+            model_path = BASE_DIR / 'AI_Models' / 'generated_suburbs_tree.pkl'
+        case _:
+            return {"error": "Invalid parameter"}
+
+    modelin = joblib.load(model_path)
+
     features = np.array([
         [
             inp.day_of_week,
@@ -54,17 +69,16 @@ def predict(inputs: List[ModelInput]):
         ] for inp in inputs
     ], dtype=np.float32)
 
-    preds = modelin.predict(features)  # Assume shape (n_samples, 5)
+    preds = modelin.predict(features)  # shape (n_samples, 5)
 
     litter_types = ["plastic", "paper", "metal", "glass", "organic"]
-
     predictions = []
     for inp, pred_row in zip(inputs, preds):
-        # Map each litter type to its predicted value for that input
         litter_prediction = {lt: float(pred) for lt, pred in zip(litter_types, pred_row)}
         predictions.append({inp.label: litter_prediction})
 
     return {"predictions": predictions}
+
 
 @app.post("/retrain")
 def retrain_model(request: RetrainRequest):
