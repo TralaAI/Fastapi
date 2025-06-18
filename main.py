@@ -1,14 +1,13 @@
-from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List
+from fastapi import FastAPI
 from pathlib import Path
-import joblib 
-import numpy as np
+from typing import List
 import pandas as pd
+import numpy as np
 import subprocess
+import joblib
 
 BASE_DIR = Path(__file__).resolve().parent
-
 MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
 
 app = FastAPI()

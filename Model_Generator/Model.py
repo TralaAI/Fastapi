@@ -9,6 +9,9 @@ from sklearn import tree
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+from sqlalchemy import create_engine
+import os
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -43,7 +46,18 @@ match parameter:
         sys.exit(1)
 
 
-afval = pd.read_csv(DATA_PATH)
+# Load environment variables from .env file
+load_dotenv()
+
+# Create connection string
+connection_string = os.getenv("connStr")
+
+# Create SQLAlchemy engine
+engine = create_engine(connection_string)
+
+# Query data from the SQL Server database
+query = "SELECT * FROM afval_data"  # TODO Replace 'afval_data' with actual table name with all the data
+afval = pd.read_sql(query, engine)
 
 # Instead of detected_object being a class. I made their classes columns with integer values. Next step is to group them per time interval. 
 afval_encoded = pd.get_dummies(afval, columns=['detected_object'], dtype=int)
@@ -139,7 +153,7 @@ def plot_tree_regression(model, features, output_file=DRAW_PATH):
     return graph
 
 #---------SCHOOL FUNCTIONS-----------
-plot_tree_regression(dt, ['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius', 'is_weekend'])
+# plot_tree_regression(dt, ['day_of_week', 'month', 'holiday', 'weather', 'temperature_celsius', 'is_weekend'])
 
 
 predict_train = dt.predict(x_train)
