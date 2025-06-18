@@ -19,11 +19,12 @@ class ModelInput(BaseModel):
     holiday: bool
     weather: int
     temperature_celcius: int
+    is_weekend: bool
     label: str
 
 class ModelInputRequest(BaseModel):
     inputs: List[ModelInput]
-    parameter: str
+    modelIndex: str
 
 class DataEnrichment(BaseModel):
     timestamp: str
@@ -41,9 +42,9 @@ litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 @app.post("/predict")
 def predict(request: ModelInputRequest):
     inputs = request.inputs
-    parameter = request.parameter
+    modelIndex = request.modelIndex
 
-    match parameter:
+    match modelIndex:
         case '0':
             model_path = BASE_DIR / 'AI_Models' / 'developing_phase_tree.pkl'
         case '1':
@@ -55,7 +56,7 @@ def predict(request: ModelInputRequest):
         case '4':
             model_path = BASE_DIR / 'AI_Models' / 'generated_suburbs_tree.pkl'
         case _:
-            return {"error": "Invalid parameter"}
+            return {"error": "Invalid modelIndex"}
 
     modelin = joblib.load(model_path)
 
@@ -65,7 +66,8 @@ def predict(request: ModelInputRequest):
             inp.month,
             int(inp.holiday),
             inp.weather,
-            inp.temperature_celcius
+            inp.temperature_celcius,
+            inp.is_weekend,
         ] for inp in inputs
     ], dtype=np.float32)
 
