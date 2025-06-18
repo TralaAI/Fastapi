@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR.parent / 'Data' / 'Generated_Data.csv'
-OUTPUT_PATH = BASE_DIR /'random_forest.pkl'
+OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' /'random_forest.pkl'
 
 afval = pd.read_csv(DATA_PATH)
 
