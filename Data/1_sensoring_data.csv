@@ -1,1 +1,1 @@
-id,detected_object,timestamp,weather,temperature_celsius,holiday
+id,detected_object,timestamp,weather,temperature_celsius,holiday,location
