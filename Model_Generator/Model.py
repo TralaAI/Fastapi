@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 
 BASE_DIR = Path(__file__).resolve().parent
 
-parameter = '3'
+parameter = '0'
 
 if len(sys.argv) > 1:
     parameter = sys.argv[1]

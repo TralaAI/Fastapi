@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-OUTPUT_PATH = BASE_DIR / '3_industrial_data.csv'
+OUTPUT_PATH = BASE_DIR / '4_suburbs_data.csv'
 
 # Parameters
 start_date = '2025-01-01'
@@ -15,11 +15,11 @@ litter_types = ['paper', 'plastic', 'organic', 'metal', 'glass']
 
 # Custom litter distribution
 custom_litter_distribution = {
-    'metal': 0.40,
-    'glass': 0.30,
-    'plastic': 0.15,
-    'paper': 0.10,
-    'organic': 0.05
+    'plastic': 0.35,
+    'paper': 0.30,
+    'organic': 0.20,
+    'metal': 0.10,
+    'glass': 0.05
 }
 
 # Dutch holidays 2025
@@ -56,22 +56,22 @@ month_temp_bounds = {
 
 # Easy-to-adjust effect modifiers for weather and temperature
 WEATHER_EFFECTS = {
-    'stormy': -0.2,
-    'rainy': -0.1,
+    'stormy': -0.6,
+    'rainy': -0.4,
     'cloudy': 0.1,
-    'misty': 0,
-    'sunny': 0.2,   # boost sunny to be 100% more litter
-    'snowy': -0.2
+    'misty': -0.1,
+    'sunny': 0.5,
+    'snowy': -0.7
 }
 
 TEMPERATURE_EFFECTS = {
     'high': {
         'threshold': 20,
-        'modifier': 0.1 
+        'modifier': 0.25
     },
     'low': {
         'threshold': 5,
-        'modifier': -0.1
+        'modifier': -0.25
     },
     'moderate': 0
 }
@@ -111,9 +111,9 @@ def temperature_modifier(temperature):
 
 
 def litter_rate(date, weather, temperature):
-    base_rate = 7
-    weekend_bonus = -0.5 if is_weekend(date) else 0
-    holiday_bonus = 0 if date in holidays else 0
+    base_rate = 10
+    weekend_bonus = 0.2 if is_weekend(date) else 0
+    holiday_bonus = 0.4 if date in holidays else 0
     weather_bonus = WEATHER_EFFECTS.get(weather, 0)
     temp_bonus = temperature_modifier(temperature)
     rate = base_rate * (1 + weekend_bonus + holiday_bonus + weather_bonus + temp_bonus)
