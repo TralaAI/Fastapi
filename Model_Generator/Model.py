@@ -80,7 +80,7 @@ daily_counts['month'] = daily_counts['date'].dt.month
 daily_counts['is_weekend'] = daily_counts['day_of_week'].apply(lambda x: 1 if x >= 5 else 0)
 
 
-print(daily_counts)
+# print(daily_counts)
 features = ['detected_object_glass', 'detected_object_metal', 'detected_object_organic', 'detected_object_paper', 'detected_object_plastic']
 
 

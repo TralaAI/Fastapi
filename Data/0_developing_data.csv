@@ -6635,3 +6635,6 @@ id,detected_object,timestamp,weather,temperature_celsius,holiday
 6634,metal,2025-12-31 14:06:47,stormy,6,1
 6635,organic,2025-12-31 21:24:12,stormy,6,1
 6636,plastic,2025-12-31 13:42:23,stormy,6,1
+6637,plastic,2025-06-17 10:00:00,sunny,21,0
+6638,glass,2025-06-17 12:30:00,cloudy,20,0
+6639,paper,2025-06-17 15:00:00,rain,18,1
