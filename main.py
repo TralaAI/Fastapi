@@ -28,6 +28,14 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set.")
 
+# load_dotenv()
+# connection_string = os.getenv("connStr")
+# engine = create_engine(connection_string)
+# query = "SELECT * FROM FApiKeys"
+
+# with engine.connect() as conn:
+#     result = conn.execute(text(query)).fetchone()
+
 engine = create_engine(DATABASE_URL)
 metadata = MetaData()
 f_api_keys = Table("FApiKeys", metadata, autoload_with=engine)
