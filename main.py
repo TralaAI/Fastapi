@@ -1,29 +1,65 @@
+from fastapi.middleware.base import BaseHTTPMiddleware
+from fastapi.exceptions import HTTPException
 from sqlalchemy import create_engine, text
-from dotenv import load_dotenv
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi.responses import Response
+from fastapi.requests import Request
+from sqlalchemy.sql import select
 from pydantic import BaseModel
+from dotenv import load_dotenv
+from datetime import datetime
 from fastapi import FastAPI
+from typing import Optional
+from fastapi import Header
 from pathlib import Path
 from typing import List
 import pandas as pd
 import numpy as np
 import subprocess
 import joblib
+import uuid
 import os
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set.")
 
-load_dotenv()
-connection_string = os.getenv("connStr")
-engine = create_engine(connection_string)
-query = "SELECT * FROM FApiKeys"
+engine = create_engine(DATABASE_URL)
+metadata = MetaData()
+f_api_keys = Table("FApiKeys", metadata, autoload_with=engine)
 
-with engine.connect() as conn:
-    result = conn.execute(text(query)).fetchone()
+class APIKeyMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        x_api_key = request.headers.get("X-API-Key")
+        if not x_api_key:
+            raise HTTPException(status_code=401, detail="Missing API key header")
 
-API_KEY = result[1] if result else None
+        try:
+            with engine.connect() as conn:
+                query = select(f_api_keys.c.Key).where(f_api_keys.c.Key == x_api_key)
+                result = conn.execute(query).fetchone()
+                if not result:
+                    raise HTTPException(status_code=401, detail="Invalid API key")
+        except SQLAlchemyError:
+            raise HTTPException(status_code=500, detail="Database error")
+
+        response = await call_next(request)
+        return response
+
 
 app = FastAPI()
+app.add_middleware(APIKeyMiddleware)
+
+class APIKey(BaseModel):
+    id: int
+    key: uuid = Field(default_factory=uuid.uuid4)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    expires_at: Optional[datetime] = None
+    is_active: bool = True
 
 class ModelInput(BaseModel):
     day_of_week: int
