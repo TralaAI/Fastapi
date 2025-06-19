@@ -1,16 +1,14 @@
-from fastapi.middleware.base import BaseHTTPMiddleware
-from fastapi.exceptions import HTTPException
-from sqlalchemy import create_engine, text
+from starlette.middleware.base import BaseHTTPMiddleware
+from sqlalchemy import MetaData, Table, create_engine
+from starlette.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi.responses import Response
+from pydantic import BaseModel, Field
 from fastapi.requests import Request
 from sqlalchemy.sql import select
-from pydantic import BaseModel
 from dotenv import load_dotenv
 from datetime import datetime
 from fastapi import FastAPI
 from typing import Optional
-from fastapi import Header
 from pathlib import Path
 from typing import List
 import pandas as pd
@@ -44,20 +42,18 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         x_api_key = request.headers.get("X-API-Key")
         if not x_api_key:
-            raise HTTPException(status_code=401, detail="Missing API key header")
+            return JSONResponse({"detail": "Missing API key header"}, status_code=401)
 
         try:
             with engine.connect() as conn:
                 query = select(f_api_keys.c.Key).where(f_api_keys.c.Key == x_api_key)
                 result = conn.execute(query).fetchone()
                 if not result:
-                    raise HTTPException(status_code=401, detail="Invalid API key")
+                    return JSONResponse({"detail": "Invalid API key"}, status_code=401)
         except SQLAlchemyError:
-            raise HTTPException(status_code=500, detail="Database error")
+            return JSONResponse({"detail": "Database error"}, status_code=500)
 
-        response = await call_next(request)
-        return response
-
+        return await call_next(request)
 
 app = FastAPI()
 app.add_middleware(APIKeyMiddleware)
