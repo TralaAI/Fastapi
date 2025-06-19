@@ -22,7 +22,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("connStr")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set.")
 
