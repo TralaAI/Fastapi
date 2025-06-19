@@ -1,3 +1,5 @@
+from sqlalchemy import create_engine, text
+from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi import FastAPI
 from pathlib import Path
@@ -6,9 +8,20 @@ import pandas as pd
 import numpy as np
 import subprocess
 import joblib
+import os
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
+
+load_dotenv()
+connection_string = os.getenv("connStr")
+engine = create_engine(connection_string)
+query = "SELECT * FROM FApiKeys"
+
+with engine.connect() as conn:
+    result = conn.execute(text(query)).fetchone()
+
+API_KEY = result[1] if result else None
 
 app = FastAPI()
 

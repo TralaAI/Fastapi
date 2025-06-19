@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
 
-parameter = '4'
+parameter = '0'
 
 if len(sys.argv) > 1:
     parameter = sys.argv[1]
