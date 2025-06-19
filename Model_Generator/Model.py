@@ -1,4 +1,5 @@
 import sys
+import os
 import graphviz
 import numpy as np
 import pandas as pd
@@ -6,11 +7,10 @@ import joblib as jb
 from fpdf import FPDF
 from pathlib import Path
 from sklearn import tree
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sqlalchemy import create_engine
-import os
-from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
 
