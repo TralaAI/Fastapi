@@ -135,4 +135,4 @@ def retrain_model(request: RetrainRequest):
 
 @app.get("/status")
 def status():
-        return {"status": "API is running", "model_path": str(MODEL_PATH)}
+        return {"status": "API is running"}
