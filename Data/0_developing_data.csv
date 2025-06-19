@@ -6641,3 +6641,6 @@ id,detected_object,timestamp,weather,temperature_celsius,holiday,location
 6640,plastic,2025-06-17 10:00:00,sunny,21,0
 6641,glass,2025-06-17 12:30:00,cloudy,20,0
 6642,paper,2025-06-17 15:00:00,rain,18,1
+6643,plastic,2025-06-17 10:00:00,sunny,21,0
+6644,glass,2025-06-17 12:30:00,cloudy,20,0
+6645,paper,2025-06-17 15:00:00,rain,18,1

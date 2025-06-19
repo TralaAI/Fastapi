@@ -125,7 +125,7 @@ def predict(request: ModelInputRequest):
 
     return {"predictions": predictions}
 
-
+# TODO: retrain needs to add new data to the database instead of CSV
 @app.post("/retrain")
 def retrain_model(request: RetrainRequest):
     data = request.data
