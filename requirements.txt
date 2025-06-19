@@ -1,9 +1,10 @@
 fastapi
 uvicorn
-scikit-learn
-numpy
-pandas
-joblib
-python-dotenv
-requests
 sqlalchemy
+pydantic
+python-dotenv
+pandas
+numpy
+joblib
+scikit-learn
+requests
