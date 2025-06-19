@@ -132,3 +132,7 @@ def retrain_model(request: RetrainRequest):
         "added_rows": len(new_data),
         "exec_output": exec_output
     }
+
+@app.get("/status")
+def status():
+        return {"status": "API is running", "model_path": str(MODEL_PATH)}
