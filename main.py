@@ -1,16 +1,14 @@
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from sqlalchemy import MetaData, Table, create_engine
 from fastapi.exceptions import HTTPException
-from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi.responses import Response
+from datetime import datetime, timezone
+from pydantic import BaseModel, Field
 from fastapi.requests import Request
 from sqlalchemy.sql import select
-from pydantic import BaseModel
 from dotenv import load_dotenv
-from datetime import datetime
 from fastapi import FastAPI
 from typing import Optional
-from fastapi import Header
 from pathlib import Path
 from typing import List
 import pandas as pd
@@ -24,7 +22,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("connStr")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set.")
 
@@ -56,8 +54,8 @@ app.add_middleware(APIKeyMiddleware)
 
 class APIKey(BaseModel):
     id: int
-    key: uuid = Field(default_factory=uuid.uuid4)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    key: uuid.UUID = Field(default_factory=uuid.uuid4)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: Optional[datetime] = None
     is_active: bool = True
 
