@@ -146,32 +146,7 @@ def predict(request: ModelInputRequest):
 
 # TODO: retrain needs to add new data to the database instead of CSV
 @app.post("/retrain")
-def retrain_model(request: RetrainRequest):
-    data = request.data
-    cameraLocation = request.cameraLocation 
-
-    match cameraLocation:
-        case '0':
-            CSV_PATH = BASE_DIR / 'Data' / '0_developing_data.csv'
-        case '1':
-            CSV_PATH = BASE_DIR / 'Data' / '1_sensoring_data.csv'
-        case '2':
-            CSV_PATH = BASE_DIR / 'Data' / '2_city_data.csv'
-        case '3':
-            CSV_PATH = BASE_DIR / 'Data' / '3_industrial_data.csv'
-        case '4':
-            CSV_PATH = BASE_DIR / 'Data' / '4_suburbs_data.csv'
-        case _:
-            return {"error": "Invalid cameraLocation"}
-    
-    df_existing = pd.read_csv(CSV_PATH)
-    last_id = df_existing['id'].max()
-
-    new_data = pd.DataFrame([item.dict() for item in data])
-    new_data['holiday'] = new_data['holiday'].astype(int)
-    new_data.insert(0, 'id', range(last_id + 1, last_id + 1 + len(new_data)))
-    new_data = new_data[['id', 'detected_object', 'timestamp', 'weather', 'temperature_celsius', 'holiday']]
-    new_data.to_csv(CSV_PATH, mode='a', index=False, header=False)
+def retrain_model(cameraLocation: str):
 
     if MODEL_PATH.exists():
         try:
@@ -191,11 +166,7 @@ def retrain_model(request: RetrainRequest):
     else:
         exec_output = {"error": "Model.py not found"}
 
-    return {
-        "status": "success",
-        "added_rows": len(new_data),
-        "exec_output": exec_output
-    }
+    return {"status": "success"}
 
 @app.get("/status")
 def status():
