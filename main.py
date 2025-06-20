@@ -21,6 +21,9 @@ import os
 
 load_dotenv()
 
+if not os.getenv("connStr"):
+    raise RuntimeError("The 'connStr' environment variable is required but not set. Please set it before running the application.")
+
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
 DATABASE_URL = os.getenv("connStr")
