@@ -28,7 +28,7 @@ if not DATABASE_URL:
 
 engine = create_engine(DATABASE_URL)
 metadata = MetaData()
-f_api_keys = Table("FApiKeys", metadata, autoload_with=engine)
+api_keys = Table("ApiKeys", metadata, autoload_with=engine)
 
 class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -38,7 +38,17 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
 
         try:
             with engine.connect() as conn:
-                query = select(f_api_keys.c.Key).where(f_api_keys.c.Key == x_api_key)
+                # Build query to validate API key: must match, be active, not expired, and of type 'fastapi'
+                query = (
+                    select(api_keys.c.Key)
+                    .where(api_keys.c.Key == x_api_key)
+                    .where(api_keys.c.IsActive.is_(True))
+                    .where(
+                        (api_keys.c.ExpiresAt.is_(None)) |
+                        (api_keys.c.ExpiresAt > datetime.now(timezone.utc))
+                    )
+                    .where(api_keys.c.Type == "fastapi")
+                )
                 result = conn.execute(query).fetchone()
                 if not result:
                     return JSONResponse({"detail": "Invalid API key"}, status_code=401)
@@ -56,6 +66,7 @@ class APIKey(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     expires_at: Optional[datetime] = None
     is_active: bool = True
+    type: str = "fastapi"
 
 class ModelInput(BaseModel):
     day_of_week: int
