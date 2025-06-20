@@ -8,6 +8,7 @@ from fastapi.requests import Request
 from sqlalchemy.sql import select
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from typing import Callable
 from typing import Optional
 from pathlib import Path
 from typing import List
@@ -28,10 +29,16 @@ if not DATABASE_URL:
 
 engine = create_engine(DATABASE_URL)
 metadata = MetaData()
-api_keys = Table("ApiKeys", metadata, autoload_with=engine)
+api_keys = Table(
+    "ApiKeys",
+    metadata,
+    autoload_with=engine,
+    schema="dbo"  # Explicitly specify schema for SQL Server
+)
+
 
 class APIKeyMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable):
         x_api_key = request.headers.get("X-API-Key")
         if not x_api_key:
             return JSONResponse({"detail": "Missing API key header"}, status_code=401)
@@ -42,7 +49,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 query = (
                     select(api_keys.c.Key)
                     .where(api_keys.c.Key == x_api_key)
-                    .where(api_keys.c.IsActive.is_(True))
+                    .where(api_keys.c.IsActive == True)
                     .where(
                         (api_keys.c.ExpiresAt.is_(None)) |
                         (api_keys.c.ExpiresAt > datetime.now(timezone.utc))
@@ -52,7 +59,8 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                 result = conn.execute(query).fetchone()
                 if not result:
                     return JSONResponse({"detail": "Invalid API key"}, status_code=401)
-        except SQLAlchemyError:
+        except SQLAlchemyError as ex:
+            print("Database error occurred while validating API key : ", ex)
             return JSONResponse({"detail": "Database error"}, status_code=500)
 
         return await call_next(request)
