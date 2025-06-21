@@ -9,3 +9,4 @@ joblib
 scikit-learn
 requests
 pyodbc
+fpdf
