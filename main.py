@@ -117,8 +117,8 @@ def predict(request: ModelInputRequest):
         case _:
             return JSONResponse({"error": "Invalid modelIndex"}, status_code=400)
         
-        if not pkl_path.exists():
-            return JSONResponse({"error": f"Model file not found: {pkl_path}"}, status_code=404)
+    if not pkl_path.exists():
+        return JSONResponse({"error": f"Model file not found: {pkl_path}"}, status_code=404)
 
     modelin = joblib.load(pkl_path)
 
