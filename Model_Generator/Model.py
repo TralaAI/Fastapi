@@ -35,7 +35,7 @@ def train_and_save_model(parameter=0):
     if not connection_string:
         raise ValueError("Database connection string (connStr) is not set in environment variables.")
     engine = create_engine(connection_string)
-    query = f"SELECT * FROM litters WHERE location='{CAMERA_ID}'"
+    query = f"SELECT * FROM litters WHERE CameraId='{CAMERA_ID}'"
     afval = pd.read_sql(query, engine)
     # Check if 'Type' column exists before one-hot encoding
     if 'Type' not in afval.columns:
@@ -115,4 +115,4 @@ def train_and_save_model(parameter=0):
     print(f"Test RMSE: {rmse_test}")
     jb.dump(dt, OUTPUT_PATH)
     # Optionally plot trees:
-    # plot_tree_regression(dt, x.columns.tolist(), DRAW_PATH)
+    plot_tree_regression(dt, x.columns.tolist(), DRAW_PATH)

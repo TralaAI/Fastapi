@@ -63,7 +63,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
-ModelGenerator.train_and_save_model('1')  # Initial training for sensoring group
+ModelGenerator.train_and_save_model(1)  # Initial training for sensoring group
 
 app = FastAPI()
 app.add_middleware(APIKeyMiddleware)
