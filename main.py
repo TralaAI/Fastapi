@@ -1,5 +1,6 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy import MetaData, Table, create_engine
+import Model_Generator.Model as ModelGenerator
 from starlette.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, timezone
@@ -10,6 +11,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from typing import Callable
 from typing import Optional
+from fastapi import Query
 from pathlib import Path
 from typing import List
 import pandas as pd
@@ -25,7 +27,6 @@ if not os.getenv("connStr"):
     raise RuntimeError("The 'connStr' environment variable is required but not set. Please set it before running the application.")
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
 DATABASE_URL = os.getenv("connStr")
 if not DATABASE_URL:
     raise ValueError("connStr environment variable is not set.")
@@ -99,10 +100,6 @@ class DataEnrichment(BaseModel):
     weather: str
     temperature_celsius: int
 
-class RetrainRequest(BaseModel):
-    data: List[DataEnrichment]
-    cameraLocation: str
-
 litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 
 @app.post("/predict")
@@ -122,7 +119,10 @@ def predict(request: ModelInputRequest):
         case '4':
             pkl_path = BASE_DIR / 'AI_Models' / 'generated_suburbs_tree.pkl'
         case _:
-            return {"error": "Invalid modelIndex"}
+            return JSONResponse({"error": "Invalid modelIndex"}, status_code=400)
+        
+        if not pkl_path.exists():
+            return JSONResponse({"error": f"Model file not found: {pkl_path}"}, status_code=404)
 
     modelin = joblib.load(pkl_path)
 
@@ -147,28 +147,9 @@ def predict(request: ModelInputRequest):
 
     return {"predictions": predictions}
 
-# TODO: retrain needs to add new data to the database instead of CSV
 @app.post("/retrain")
-def retrain_model(cameraLocation: str):
-
-    if MODEL_PATH.exists():
-        try:
-            result = subprocess.run(
-                ['python3', str(MODEL_PATH), str(cameraLocation)], 
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            exec_output = {
-                "stdout": result.stdout,
-                "stderr": result.stderr,
-                "message": "Model.py executed successfully."
-            }
-        except subprocess.CalledProcessError as e:
-            exec_output = {"error": f"Execution failed: {e.stderr}"}
-    else:
-        exec_output = {"error": "Model.py not found"}
-
+def retrain_model(cameraLocation: int = Query(..., description="Camera location ID")):
+    ModelGenerator.train_and_save_model(str(cameraLocation))
     return {"status": "success"}
 
 @app.get("/status")
