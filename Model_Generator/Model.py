@@ -11,40 +11,31 @@ import numpy as np
 import graphviz
 import os
 
-def train_and_save_model(parameter='0'):
+def train_and_save_model(parameter=0):
     BASE_DIR = Path(__file__).resolve().parent
+    OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / f"Camera{parameter}_tree.pkl"
+    CAMERA_ID = parameter
 
     match parameter:
         case '0':
-            OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'developing_phase_tree.pkl'
             DRAW_PATH = BASE_DIR / 'Plot_Developing' / 'developing_phase_tree'
-            LOCATION = 'development'
         case '1':
-            OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'sensoring_group_tree.pkl'
             DRAW_PATH = BASE_DIR / 'Plot_Sensoring' / 'sensoring_group_tree'
-            LOCATION = 'sensoring'
         case '2':
-            OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_city_tree.pkl'
             DRAW_PATH = BASE_DIR / 'Plot_City' / 'generated_city_tree'
-            LOCATION = 'city'
         case '3':
-            OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_industrial_tree.pkl'
             DRAW_PATH = BASE_DIR / 'Plot_Industrial' / 'generated_industrial_tree'
-            LOCATION = 'industrial'
         case '4':
-            OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_suburbs_tree.pkl'
             DRAW_PATH = BASE_DIR / 'Plot_Suburbs' / 'generated_suburbs_tree'
-            LOCATION = 'suburbs'
         case _:
-            print(f"Invalid parameter: {parameter}")
-            return
+            DRAW_PATH = BASE_DIR / 'Plot_Others' / 'others_tree'
 
     load_dotenv()
     connection_string = os.getenv("connStr")
     if not connection_string:
         raise ValueError("Database connection string (connStr) is not set in environment variables.")
     engine = create_engine(connection_string)
-    query = f"SELECT * FROM litters WHERE location='{LOCATION}'"
+    query = f"SELECT * FROM litters WHERE location='{CAMERA_ID}'"
     afval = pd.read_sql(query, engine)
     # Check if 'Type' column exists before one-hot encoding
     if 'Type' not in afval.columns:
@@ -84,6 +75,7 @@ def train_and_save_model(parameter='0'):
     dt = RandomForestRegressor(n_estimators=5, max_depth=3)
     dt.fit(x_train, y_train)
 
+    # -------------SCHOOL FUNCTIONS-----------------
     def calculate_rmse(predictions, actuals):
         if len(predictions) != len(actuals):
             raise Exception("The amount of predictions did not equal the amount of actuals")
@@ -113,6 +105,7 @@ def train_and_save_model(parameter='0'):
             pdf.image(str(image_file), x=10, y=10, w=180)
         pdf.output(str(output_path.with_suffix('.pdf')))
         return graph
+    # -------------END SCHOOL FUNCTIONS-----------------
 
     predict_train = dt.predict(x_train)
     predict_test = dt.predict(x_test)
