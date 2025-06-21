@@ -41,10 +41,21 @@ def train_and_save_model(parameter='0'):
 
     load_dotenv()
     connection_string = os.getenv("connStr")
+    if not connection_string:
+        raise ValueError("Database connection string (connStr) is not set in environment variables.")
     engine = create_engine(connection_string)
     query = f"SELECT * FROM litters WHERE location='{LOCATION}'"
     afval = pd.read_sql(query, engine)
+    # Check if 'Type' column exists before one-hot encoding
+    if 'Type' not in afval.columns:
+        raise KeyError("Column 'Type' does not exist in the database table 'litters'.")
+    # One-hot encode the 'Type' column, ensuring all 5 types are present
     afval_encoded = pd.get_dummies(afval, columns=['Type'], dtype=int)
+    # Ensure all 5 expected type columns exist (even if not present in the data)
+    expected_types = ['Type_glass', 'Type_metal', 'Type_organic', 'Type_paper', 'Type_plastic']
+    for col in expected_types:
+        if col not in afval_encoded.columns:
+            afval_encoded[col] = 0
     afval_encoded['timestamp'] = pd.to_datetime(afval_encoded['TimeStamp'])
     afval_encoded['date'] = afval_encoded['timestamp'].dt.date
     weather_mapping = {'snowy': 1, 'stormy': 2, 'rainy': 3, 'misty': 4, 'cloudy': 5, 'sunny': 6}
