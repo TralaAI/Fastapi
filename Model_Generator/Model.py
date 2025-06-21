@@ -17,15 +17,15 @@ def train_and_save_model(parameter=0):
     CAMERA_ID = parameter
 
     match parameter:
-        case 0:
-            DRAW_PATH = BASE_DIR / 'Plot_Developing' / 'developing_phase_tree'
         case 1:
-            DRAW_PATH = BASE_DIR / 'Plot_Sensoring' / 'sensoring_group_tree'
+            DRAW_PATH = BASE_DIR / 'Plot_Developing' / 'developing_phase_tree'
         case 2:
-            DRAW_PATH = BASE_DIR / 'Plot_City' / 'generated_city_tree'
+            DRAW_PATH = BASE_DIR / 'Plot_Sensoring' / 'sensoring_group_tree'
         case 3:
-            DRAW_PATH = BASE_DIR / 'Plot_Industrial' / 'generated_industrial_tree'
+            DRAW_PATH = BASE_DIR / 'Plot_City' / 'generated_city_tree'
         case 4:
+            DRAW_PATH = BASE_DIR / 'Plot_Industrial' / 'generated_industrial_tree'
+        case 5:
             DRAW_PATH = BASE_DIR / 'Plot_Suburbs' / 'generated_suburbs_tree'
         case _:
             DRAW_PATH = BASE_DIR / 'Plot_Others' / 'others_tree'
