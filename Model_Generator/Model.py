@@ -1,16 +1,15 @@
-import sys
-import os
-import graphviz
-import numpy as np
-import pandas as pd
-import joblib as jb
-from fpdf import FPDF
-from pathlib import Path
-from sklearn import tree
-from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sqlalchemy import create_engine
+from dotenv import load_dotenv
+from sklearn import tree
+from pathlib import Path
+from fpdf import FPDF
+import joblib as jb
+import pandas as pd
+import numpy as np
+import graphviz
+import os
 
 def train_and_save_model(parameter='0'):
     BASE_DIR = Path(__file__).resolve().parent

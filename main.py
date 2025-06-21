@@ -2,21 +2,15 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy import MetaData, Table, create_engine
 import Model_Generator.Model as ModelGenerator
 from starlette.responses import JSONResponse
+from typing import Callable, List, Optional
+from fastapi import FastAPI, Query, Request
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, timezone
 from pydantic import BaseModel, Field
-from fastapi.requests import Request
 from sqlalchemy.sql import select
 from dotenv import load_dotenv
-from fastapi import FastAPI
-from typing import Callable
-from typing import Optional
-from fastapi import Query
 from pathlib import Path
-from typing import List
-import pandas as pd
 import numpy as np
-import subprocess
 import joblib
 import uuid
 import os
