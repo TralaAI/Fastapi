@@ -116,13 +116,15 @@ def predict(request: ModelInputRequest):
 
     preds = modelin.predict(features)  # shape (n_samples, 5)
 
-    litter_types = ["plastic", "paper", "metal", "glass", "organic"]
-    predictions = []
+    results = []
     for inp, pred_row in zip(inputs, preds):
         litter_prediction = {lt: float(pred) for lt, pred in zip(litter_types, pred_row)}
-        predictions.append({inp.label: litter_prediction})
+        results.append({
+            "date": inp.label,
+            "predictions": litter_prediction
+        })
 
-    return {"predictions": predictions}
+    return results
 
 @app.post("/retrain")
 def retrain_model(cameraLocation: int = Query(..., description="Camera location ID")):
