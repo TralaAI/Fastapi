@@ -131,6 +131,7 @@ def predict(request: ModelInputRequest):
 
 @app.post("/retrain")
 def retrain_model(request: RetrainRequest):
+    print(request.cameraLocation)
     ModelGenerator.train_and_save_model(request.cameraLocation)
     return {"status": "success"}
 
