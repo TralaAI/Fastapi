@@ -19,31 +19,22 @@ parameter = '0'
 if len(sys.argv) > 1:
     parameter = sys.argv[1]
 
+OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / f"Camera{parameter}_tree.pkl"
+CAMERA_ID = parameter
+
 match parameter:
     case '0':
-        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'developing_phase_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Developing' / 'developing_phase_tree'
-        LOCATION = 'development'
     case '1':
-        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'sensoring_group_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Sensoring' / 'sensoring_group_tree'
-        LOCATION = 'sensoring'
     case '2':
-        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_city_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_City' / 'generated_city_tree'
-        LOCATION = 'city'
     case '3':
-        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_industrial_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Industrial' / 'generated_industrial_tree'
-        LOCATION = 'industrial'
     case '4':
-        OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / 'generated_suburbs_tree.pkl'
         DRAW_PATH = BASE_DIR / 'Plot_Suburbs' / 'generated_suburbs_tree'
-        LOCATION = 'suburbs'
     case _:
-        print(f"Invalid parameter: {parameter}")
-        sys.exit(1)
-
+        DRAW_PATH = BASE_DIR / 'Plot_Others' / 'others_tree'
 
 # Load environment variables from .env file
 load_dotenv()
@@ -55,7 +46,7 @@ connection_string = os.getenv("connStr")
 engine = create_engine(connection_string)
 
 # Query data from the SQL Server database
-query = f"SELECT * FROM litters WHERE location='{LOCATION}'" 
+query = f"SELECT * FROM litters WHERE CameraId='{CAMERA_ID}'" 
 afval = pd.read_sql(query, engine)
 
 # One-hot encode 'Type' column into separate columns (glass, metal, etc.)
@@ -141,6 +132,7 @@ def plot_tree_regression(model, features, output_file=DRAW_PATH):
 
     pdf.output(str(output_path.with_suffix('.pdf')))
     return graph
+# ---------------------------------------
 
 # Predictions
 predict_train = dt.predict(x_train)

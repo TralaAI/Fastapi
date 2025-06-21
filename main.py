@@ -1,13 +1,13 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy import MetaData, Table, create_engine
 from starlette.responses import JSONResponse
+from fastapi import FastAPI, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 from fastapi.requests import Request
 from sqlalchemy.sql import select
 from dotenv import load_dotenv
-from fastapi import FastAPI
 from typing import Optional
 from pathlib import Path
 from typing import List
@@ -68,7 +68,7 @@ class ModelInput(BaseModel):
 
 class ModelInputRequest(BaseModel):
     inputs: List[ModelInput]
-    modelIndex: str
+    cameraId: int
 
 class DataEnrichment(BaseModel):
     timestamp: str
@@ -79,28 +79,19 @@ class DataEnrichment(BaseModel):
 
 class RetrainRequest(BaseModel):
     data: List[DataEnrichment]
-    cameraLocation: str
+    cameraId: int
 
 litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 
 @app.post("/predict")
 def predict(request: ModelInputRequest):
     inputs = request.inputs
-    modelIndex = request.modelIndex
+    cameraId = request.cameraId
 
-    match modelIndex:
-        case '0':
-            pkl_path = BASE_DIR / 'AI_Models' / 'developing_phase_tree.pkl'
-        case '1':
-            pkl_path = BASE_DIR / 'AI_Models' / 'sensoring_group_tree.pkl'
-        case '2':
-            pkl_path = BASE_DIR / 'AI_Models' / 'generated_city_tree.pkl'
-        case '3':
-            pkl_path = BASE_DIR / 'AI_Models' / 'generated_industrial_tree.pkl'
-        case '4':
-            pkl_path = BASE_DIR / 'AI_Models' / 'generated_suburbs_tree.pkl'
-        case _:
-            return {"error": "Invalid modelIndex"}
+    pkl_path = BASE_DIR / 'AI_Models' / f"Camera{cameraId}_tree.pkl" 
+
+    if not pkl_path.exists():
+        raise HTTPException(status_code=404, detail=f"Model file not found for Camera ID: {cameraId}")
 
     modelin = joblib.load(pkl_path)
 
@@ -115,7 +106,7 @@ def predict(request: ModelInputRequest):
         ] for inp in inputs
     ], dtype=np.float32)
 
-    preds = modelin.predict(features)  # shape (n_samples, 5)
+    preds = modelin.predict(features)
 
     litter_types = ["plastic", "paper", "metal", "glass", "organic"]
     predictions = []
@@ -128,36 +119,14 @@ def predict(request: ModelInputRequest):
 # TODO: retrain needs to add new data to the database instead of CSV
 @app.post("/retrain")
 def retrain_model(request: RetrainRequest):
-    data = request.data
-    cameraLocation = request.cameraLocation 
+    cameraId = request.cameraId
 
-    match cameraLocation:
-        case '0':
-            CSV_PATH = BASE_DIR / 'Data' / '0_developing_data.csv'
-        case '1':
-            CSV_PATH = BASE_DIR / 'Data' / '1_sensoring_data.csv'
-        case '2':
-            CSV_PATH = BASE_DIR / 'Data' / '2_city_data.csv'
-        case '3':
-            CSV_PATH = BASE_DIR / 'Data' / '3_industrial_data.csv'
-        case '4':
-            CSV_PATH = BASE_DIR / 'Data' / '4_suburbs_data.csv'
-        case _:
-            return {"error": "Invalid cameraLocation"}
-    
-    df_existing = pd.read_csv(CSV_PATH)
-    last_id = df_existing['id'].max()
-
-    new_data = pd.DataFrame([item.dict() for item in data])
-    new_data['holiday'] = new_data['holiday'].astype(int)
-    new_data.insert(0, 'id', range(last_id + 1, last_id + 1 + len(new_data)))
-    new_data = new_data[['id', 'detected_object', 'timestamp', 'weather', 'temperature_celsius', 'holiday']]
-    new_data.to_csv(CSV_PATH, mode='a', index=False, header=False)
+    MODEL_PATH = BASE_DIR / 'Model_Generator' / 'Model.py'
 
     if MODEL_PATH.exists():
         try:
             result = subprocess.run(
-                ['python3', str(MODEL_PATH), str(cameraLocation)], 
+                ['python3', str(MODEL_PATH), str(cameraId)], 
                 capture_output=True,
                 text=True,
                 check=True
