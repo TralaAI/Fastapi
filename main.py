@@ -89,6 +89,9 @@ class ModelInputRequest(BaseModel):
     inputs: List[ModelInput]
     cameraId: int
 
+class RetrainRequest(BaseModel):
+    cameraLocation: int
+
 litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 
 @app.post("/predict")
@@ -127,8 +130,8 @@ def predict(request: ModelInputRequest):
     return results
 
 @app.post("/retrain")
-def retrain_model(cameraLocation: int = Query(..., description="Camera location ID")):
-    ModelGenerator.train_and_save_model(cameraLocation)
+def retrain_model(request: RetrainRequest):
+    ModelGenerator.train_and_save_model(request.cameraLocation)
     return {"status": "success"}
 
 @app.get("/status")
