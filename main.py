@@ -1,5 +1,5 @@
+from sqlalchemy import MetaData, Table, create_engine, text
 from starlette.middleware.base import BaseHTTPMiddleware
-from sqlalchemy import MetaData, Table, create_engine
 import Model_Generator.Model as ModelGenerator
 from starlette.responses import JSONResponse
 from typing import Callable, List, Optional
@@ -63,8 +63,26 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
-#TODO: Query database for all camera id's and make for loop to run this function for every camera id. This way the container is always uptd
-ModelGenerator.train_and_save_model(1)  # Initial training for sensoring group
+def get_unique_camera_ids():
+    query = text("SELECT DISTINCT CameraId FROM litters")
+    with engine.connect() as conn:
+        result = conn.execute(query)
+        camera_ids = [row[0] for row in result.fetchall()]
+    return camera_ids
+
+def train_initial_models(camera_ids: List[int]):
+    for camera_id in camera_ids:
+        try:
+            ModelGenerator.train_and_save_model(camera_id)
+            print(f"Model trained and saved for Camera ID: {camera_id}")
+            print()
+        except Exception as e:
+            print(f"Error training model for Camera ID {camera_id}: {e}")
+
+camera_ids = get_unique_camera_ids()
+train_initial_models(camera_ids)
+
+# ModelGenerator.train_and_save_model(1)
 
 app = FastAPI()
 app.add_middleware(APIKeyMiddleware)
