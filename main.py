@@ -87,36 +87,17 @@ class ModelInput(BaseModel):
 
 class ModelInputRequest(BaseModel):
     inputs: List[ModelInput]
-    modelIndex: str
-
-class DataEnrichment(BaseModel):
-    timestamp: str
-    detected_object: str
-    holiday: bool
-    weather: str
-    temperature_celsius: int
+    cameraId: int
 
 litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 
 @app.post("/predict")
 def predict(request: ModelInputRequest):
     inputs = request.inputs
-    modelIndex = request.modelIndex
+    cameraId = request.cameraId
 
-    match modelIndex:
-        case '0':
-            pkl_path = BASE_DIR / 'AI_Models' / 'developing_phase_tree.pkl'
-        case '1':
-            pkl_path = BASE_DIR / 'AI_Models' / 'sensoring_group_tree.pkl'
-        case '2':
-            pkl_path = BASE_DIR / 'AI_Models' / 'generated_city_tree.pkl'
-        case '3':
-            pkl_path = BASE_DIR / 'AI_Models' / 'generated_industrial_tree.pkl'
-        case '4':
-            pkl_path = BASE_DIR / 'AI_Models' / 'generated_suburbs_tree.pkl'
-        case _:
-            return JSONResponse({"error": "Invalid modelIndex"}, status_code=400)
-        
+    pkl_path = BASE_DIR / 'AI_Models' / f"Camera{cameraId}_tree.pkl" 
+
     if not pkl_path.exists():
         return JSONResponse({"error": f"Model file not found: {pkl_path}"}, status_code=404)
 
@@ -145,7 +126,7 @@ def predict(request: ModelInputRequest):
 
 @app.post("/retrain")
 def retrain_model(cameraLocation: int = Query(..., description="Camera location ID")):
-    ModelGenerator.train_and_save_model(str(cameraLocation))
+    ModelGenerator.train_and_save_model(cameraLocation)
     return {"status": "success"}
 
 @app.get("/status")
