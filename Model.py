@@ -94,10 +94,13 @@ def train_and_save_model(parameter: int = 0):
 
     environment = os.getenv("Environment")
     if environment != "Production":
-        plot_tree_regression(dt, x.columns.tolist(), DRAW_PATH)
+        try:
+            plot_tree_regression(dt, x.columns.tolist(), DRAW_PATH)
+        except Exception as e:
+            print(f"Failed to plot tree for Camera {CAMERA_ID}: {e}")
 
     return {
-        "camera":  parameter,
+        "camera": parameter,
         "rmse": (rmse_train + rmse_test) / 2
     }
 
