@@ -79,10 +79,23 @@ def train_initial_models(camera_ids: List[int]):
         except Exception as e:
             print(f"Error training model for Camera ID {camera_id}: {e}")
 
-camera_ids = get_unique_camera_ids()
-train_initial_models(camera_ids)
+def get_last_updated_time(camera_id: int):
+    model_path = BASE_DIR / 'AI_Models' / f"Camera{camera_id}_tree.pkl"
+    if model_path.exists():
+        return datetime.fromtimestamp(model_path.stat().st_mtime, tz=timezone.utc)
+    return None
 
-# ModelGenerator.train_and_save_model(1)
+camera_ids = get_unique_camera_ids()
+train_results = [ModelGenerator.train_and_save_model(camera_id) for camera_id in camera_ids]
+
+# Variables for status endpoint for 5 different models (indexed by cameraId)
+model_status = {
+    int(result["camera"]): {
+        "current_rmse": float(result["rmse"]),
+        "last_updated": get_last_updated_time(int(result["camera"]))
+    }
+    for result in train_results
+}
 
 app = FastAPI()
 app.add_middleware(APIKeyMiddleware)
@@ -110,6 +123,10 @@ class ModelInputRequest(BaseModel):
 
 class RetrainRequest(BaseModel):
     cameraLocation: int
+class ModelStatusResponse(BaseModel):
+    status: str
+    current_rmse: float
+    last_updated: datetime
 
 litter_types = ["plastic", "paper", "metal", "glass", "organic"]
 
@@ -157,3 +174,18 @@ def retrain_model(request: RetrainRequest):
 @app.get("/status")
 def status():
         return {"status": "API is running"}
+
+@app.get("/status/model")
+def status(cameraId: int = Query(..., description="Camera ID to check model status for")):
+    pkl_path = BASE_DIR / 'AI_Models' / f"Camera{cameraId}_tree.pkl"
+    if not pkl_path.exists():
+        return JSONResponse({"error": f"Model file not found for Camera ID {cameraId}"}, status_code=404)
+    if cameraId not in model_status:
+        return JSONResponse({"error": f"No status found for Camera ID {cameraId}"}, status_code=404)
+    
+    status_info = model_status[cameraId]
+    return ModelStatusResponse(
+        status="success",
+        current_rmse=status_info["current_rmse"],
+        last_updated=status_info["last_updated"]
+    )

@@ -11,8 +11,9 @@ import numpy as np
 import graphviz
 import os
 
-def train_and_save_model(parameter=0):
-    BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent
+
+def train_and_save_model(parameter: int = 0):
     OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / f"Camera{parameter}_tree.pkl"
     CAMERA_ID = parameter
 
@@ -75,44 +76,53 @@ def train_and_save_model(parameter=0):
     dt = RandomForestRegressor(n_estimators=5, max_depth=3)
     dt.fit(x_train, y_train)
 
-    # -------------SCHOOL FUNCTIONS-----------------
-    def calculate_rmse(predictions, actuals):
-        if len(predictions) != len(actuals):
-            raise Exception("The amount of predictions did not equal the amount of actuals")
-        return (((predictions - actuals) ** 2).sum() / len(actuals)) ** 0.5
-
-    def plot_tree_regression(model, features, output_file=DRAW_PATH):
-        if not hasattr(model, 'estimators_'):
-            raise ValueError("The model does not have estimators_ attribute. Is it a RandomForestRegressor?")
-        pdf = FPDF()
-        output_path = Path(output_file)
-        if not output_path.is_absolute():
-            output_path = BASE_DIR / output_path
-        base_path = output_path.with_suffix('')
-        for i, tree_model in enumerate(model.estimators_):
-            dot_data = tree.export_graphviz(
-                tree_model,
-                out_file=None,
-                feature_names=features,
-                filled=True,
-                rounded=True,
-                special_characters=True
-            )
-            graph = graphviz.Source(dot_data)
-            image_file = base_path.with_name(f"{base_path.name}_{i+1}.png")
-            graph.render(filename=str(image_file.with_suffix('')), format='png')
-            pdf.add_page()
-            pdf.image(str(image_file), x=10, y=10, w=180)
-        pdf.output(str(output_path.with_suffix('.pdf')))
-        return graph
-    # -------------END SCHOOL FUNCTIONS-----------------
-
     predict_train = dt.predict(x_train)
     predict_test = dt.predict(x_test)
     rmse_train = calculate_rmse(predict_train, y_train.values)
     rmse_test = calculate_rmse(predict_test, y_test.values)
+    print(f"Model {parameter}")
     print(f"Train RMSE: {rmse_train}")
     print(f"Test RMSE: {rmse_test}")
+    print("")
     jb.dump(dt, OUTPUT_PATH)
-    # Optionally plot trees:
-    plot_tree_regression(dt, x.columns.tolist(), DRAW_PATH)
+
+    environment = os.getenv("Environment")
+    if environment != "Production":
+        plot_tree_regression(dt, x.columns.tolist(), DRAW_PATH)
+
+    return {
+        "camera":  parameter,
+        "rmse": (rmse_train + rmse_test) / 2
+    }
+
+# -------------SCHOOL FUNCTIONS-----------------
+def calculate_rmse(predictions, actuals):
+    if len(predictions) != len(actuals):
+        raise Exception("The amount of predictions did not equal the amount of actuals")
+    return (((predictions - actuals) ** 2).sum() / len(actuals)) ** 0.5
+
+def plot_tree_regression(model, features, output_file):
+    if not hasattr(model, 'estimators_'):
+        raise ValueError("The model does not have estimators_ attribute. Is it a RandomForestRegressor?")
+    pdf = FPDF()
+    output_path = Path(output_file)
+    if not output_path.is_absolute():
+        output_path = BASE_DIR / output_path
+    base_path = output_path.with_suffix('')
+    for i, tree_model in enumerate(model.estimators_):
+        dot_data = tree.export_graphviz(
+            tree_model,
+            out_file=None,
+            feature_names=features,
+            filled=True,
+            rounded=True,
+            special_characters=True
+        )
+        graph = graphviz.Source(dot_data)
+        image_file = base_path.with_name(f"{base_path.name}_{i+1}.png")
+        graph.render(filename=str(image_file.with_suffix('')), format='png')
+        pdf.add_page()
+        pdf.image(str(image_file), x=10, y=10, w=180)
+    pdf.output(str(output_path.with_suffix('.pdf')))
+    return graph
+# -------------END SCHOOL FUNCTIONS-----------------
