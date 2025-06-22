@@ -1,6 +1,6 @@
 from sqlalchemy import MetaData, Table, create_engine, text
 from starlette.middleware.base import BaseHTTPMiddleware
-import Model_Generator.Model as ModelGenerator
+import Model as ModelGenerator
 from starlette.responses import JSONResponse
 from typing import Callable, List, Optional
 from fastapi import FastAPI, Query, Request

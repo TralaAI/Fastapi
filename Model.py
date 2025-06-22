@@ -14,22 +14,28 @@ import os
 BASE_DIR = Path(__file__).resolve().parent
 
 def train_and_save_model(parameter: int = 0):
-    OUTPUT_PATH = BASE_DIR.parent / 'AI_Models' / f"Camera{parameter}_tree.pkl"
+    ai_models_dir = BASE_DIR / 'AI_Models'
+    ai_models_dir.mkdir(parents=True, exist_ok=True)
+
+    plot_dir = BASE_DIR / 'Model_Plots'
+    plot_dir.mkdir(parents=True, exist_ok=True)
+
+    OUTPUT_PATH = ai_models_dir / f"Camera{parameter}_tree.pkl"
     CAMERA_ID = parameter
 
     match parameter:
         case 1:
-            DRAW_PATH = BASE_DIR / 'Plot_Developing' / 'developing_phase_tree'
+            DRAW_PATH = plot_dir / 'Plot_Developing' / 'developing_phase_tree'
         case 2:
-            DRAW_PATH = BASE_DIR / 'Plot_Sensoring' / 'sensoring_group_tree'
+            DRAW_PATH = plot_dir / 'Plot_Sensoring' / 'sensoring_group_tree'
         case 3:
-            DRAW_PATH = BASE_DIR / 'Plot_City' / 'generated_city_tree'
+            DRAW_PATH = plot_dir / 'Plot_City' / 'generated_city_tree'
         case 4:
-            DRAW_PATH = BASE_DIR / 'Plot_Industrial' / 'generated_industrial_tree'
+            DRAW_PATH = plot_dir / 'Plot_Industrial' / 'generated_industrial_tree'
         case 5:
-            DRAW_PATH = BASE_DIR / 'Plot_Suburbs' / 'generated_suburbs_tree'
+            DRAW_PATH = plot_dir / 'Plot_Suburbs' / 'generated_suburbs_tree'
         case _:
-            DRAW_PATH = BASE_DIR / 'Plot_Others' / 'others_tree'
+            DRAW_PATH = plot_dir / 'Plot_Others' / 'others_tree'
 
     load_dotenv()
     connection_string = os.getenv("connStr")
@@ -80,7 +86,7 @@ def train_and_save_model(parameter: int = 0):
     predict_test = dt.predict(x_test)
     rmse_train = calculate_rmse(predict_train, y_train.values)
     rmse_test = calculate_rmse(predict_test, y_test.values)
-    print(f"Model {parameter}")
+    print(f"Model {CAMERA_ID}")
     print(f"Train RMSE: {rmse_train}")
     print(f"Test RMSE: {rmse_test}")
     print("")
