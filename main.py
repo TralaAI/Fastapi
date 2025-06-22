@@ -89,13 +89,16 @@ camera_ids = get_unique_camera_ids()
 train_results = [ModelGenerator.train_and_save_model(camera_id) for camera_id in camera_ids]
 
 # Variables for status endpoint for 5 different models (indexed by cameraId)
-model_status = {
-    int(result["camera"]): {
-        "current_rmse": float(result["rmse"]),
-        "last_updated": get_last_updated_time(int(result["camera"]))
+def build_model_status(train_results):
+    return {
+        int(result["camera"]): {
+            "current_rmse": float(result["rmse"]),
+            "last_updated": get_last_updated_time(int(result["camera"]))
+        }
+        for result in train_results
     }
-    for result in train_results
-}
+
+model_status = build_model_status(train_results)
 
 app = FastAPI()
 app.add_middleware(APIKeyMiddleware)
@@ -167,8 +170,8 @@ def predict(request: ModelInputRequest):
 
 @app.post("/retrain")
 def retrain_model(request: RetrainRequest):
-    print(request.cameraLocation)
-    ModelGenerator.train_and_save_model(request.cameraLocation)
+    retrain_result = ModelGenerator.train_and_save_model(request.cameraLocation)
+    build_model_status(retrain_result)
     return {"status": "success"}
 
 @app.get("/status")
