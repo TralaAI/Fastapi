@@ -135,7 +135,7 @@ class ModelStatusResponse(BaseModel):
     last_updated: datetime
 
 # --- Constants ---
-LITTER_TYPES = ["plastic", "paper", "metal", "glass", "organic"]
+LITTER_TYPES = ["glass", "metal", "organic", "paper", "plastic"]
 
 # --- API Endpoints ---
 @app.post("/predict")

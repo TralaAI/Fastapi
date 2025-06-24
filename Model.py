@@ -103,8 +103,8 @@ def train_and_save_model(parameter: int = 0) -> Dict[str, Any]:
     daily_counts: pd.DataFrame = afval_encoded.groupby('date').agg({
         'IsHoliday': lambda x: 1 if (x == 1).any() else 0,
         'weather': lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan,
-        'Type_glass': 'sum',
         'Temperature': 'mean',
+        'Type_glass': 'sum',
         'Type_metal': 'sum',
         'Type_organic': 'sum',
         'Type_paper': 'sum',
@@ -132,7 +132,7 @@ def train_and_save_model(parameter: int = 0) -> Dict[str, Any]:
     predict_test = model.predict(x_test)
     rmse_train = calculate_rmse(predict_train, y_train.values)
     rmse_test = calculate_rmse(predict_test, y_test.values)
-
+    
     print(f"Model {CAMERA_ID}")
     print(f"Train RMSE: {rmse_train}")
     print(f"Test RMSE: {rmse_test}\n")
