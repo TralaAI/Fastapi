@@ -144,34 +144,54 @@ def predict(request: ModelInputRequest):
     pkl_path = BASE_DIR / 'AI_Models' / f"Camera{camera_id}_tree.pkl"
     if not pkl_path.exists():
         return JSONResponse({"error": f"Model file not found: {pkl_path}"}, status_code=404)
+    try:
+        model = joblib.load(pkl_path)  # type: ignore
+    except Exception as e:
+        return JSONResponse({"error": f"Failed to load model: {str(e)}"}, status_code=500)
 
-    model = joblib.load(pkl_path)  # type: ignore
-    features = np.array([
-        [
-            inp.day_of_week,
-            inp.month,
-            int(inp.holiday),
-            inp.weather,
-            inp.temperature_celcius,
-            inp.is_weekend,
-        ] for inp in request.inputs
-    ], dtype=np.float32)
+    try:
+        features = np.array([
+            [
+                inp.day_of_week,
+                inp.month,
+                int(inp.holiday),
+                inp.weather,
+                inp.temperature_celcius,
+                inp.is_weekend,
+            ] for inp in request.inputs
+        ], dtype=np.float32)
+    except Exception as e:
+        return JSONResponse({"error": f"Invalid input data: {str(e)}"}, status_code=400)
 
-    preds = model.predict(features)
+    try:
+        preds = model.predict(features)
+    except Exception as e:
+        return JSONResponse({"error": f"Prediction failed: {str(e)}"}, status_code=500)
+
     results: List[Dict[str, Any]] = []
-    for inp, pred_row in zip(request.inputs, preds):
-        litter_prediction = {lt: float(pred) for lt, pred in zip(LITTER_TYPES, pred_row)}
-        results.append({
-            "date": inp.label,
-            "predictions": litter_prediction
-        })
-    return results
+    try:
+        for inp, pred_row in zip(request.inputs, preds):
+            litter_prediction = {lt: float(pred) for lt, pred in zip(LITTER_TYPES, pred_row)}
+            results.append({
+                "date": inp.label,
+                "predictions": litter_prediction
+            })
+    except Exception as e:
+        return JSONResponse({"error": f"Error formatting prediction results: {str(e)}"}, status_code=500)
+    return JSONResponse(content=results, status_code=200)
 
 @app.post("/retrain")
 def retrain_model(request: RetrainRequest):
-    retrain_result = ModelGenerator.train_and_save_model(request.cameraLocation)
-    build_model_status([retrain_result])
-    return {"status": "success"}
+    try:
+        retrain_result = ModelGenerator.train_and_save_model(request.cameraLocation)
+        if not retrain_result or "rmse" not in retrain_result:
+            return JSONResponse({"error": "Model retraining failed or invalid result."}, status_code=500)
+        build_model_status([retrain_result])
+        return JSONResponse({"status": "success"}, status_code=200)
+    except FileNotFoundError:
+        return JSONResponse({"error": f"Data or model file not found for Camera ID {request.cameraLocation}"}, status_code=404)
+    except Exception as e:
+        return JSONResponse({"error": f"Unexpected error: {str(e)}"}, status_code=500)
 
 @app.get("/status")
 def status():

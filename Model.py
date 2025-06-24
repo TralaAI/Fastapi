@@ -124,7 +124,7 @@ def train_and_save_model(parameter: int = 0) -> Dict[str, Any]:
 
     # --- Model Training ---
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-    model = RandomForestRegressor(n_estimators=5, max_depth=3)
+    model = RandomForestRegressor(n_estimators=5, max_depth=4)
     model.fit(x_train, y_train)
 
     # --- Evaluation ---
