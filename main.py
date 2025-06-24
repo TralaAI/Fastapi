@@ -1,19 +1,20 @@
 import os
 import uuid
+import pytz
 import joblib
 import numpy as np
 from pathlib import Path
-from datetime import datetime, timezone
-from typing import Callable, List, Optional
-
+from typing import Dict, Any
 from dotenv import load_dotenv
-from fastapi import FastAPI, Query, Request
-from pydantic import BaseModel, Field
-from sqlalchemy import MetaData, Table, create_engine, text
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import select
-from starlette.middleware.base import BaseHTTPMiddleware
+from pydantic import BaseModel, Field
+from datetime import datetime, timezone
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi import FastAPI, Query, Request
+from typing import Callable, List, Optional
 from starlette.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from sqlalchemy import MetaData, Table, create_engine, text
 
 import Model as ModelGenerator
 
@@ -73,11 +74,12 @@ def get_last_updated_time(camera_id: int) -> Optional[datetime]:
         return datetime.fromtimestamp(model_path.stat().st_mtime, tz=timezone.utc)
     return None
 
-def build_model_status(train_results: List[dict]) -> dict:
+def build_model_status(train_results: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
+    nl_tz = pytz.timezone("Europe/Amsterdam")
     return {
         int(result["camera"]): {
             "current_rmse": float(result["rmse"]),
-            "last_updated": get_last_updated_time(int(result["camera"]))
+            "last_updated": datetime.now(nl_tz)
         }
         for result in train_results
     }
