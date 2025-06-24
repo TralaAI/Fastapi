@@ -139,13 +139,13 @@ LITTER_TYPES = ["plastic", "paper", "metal", "glass", "organic"]
 
 # --- API Endpoints ---
 @app.post("/predict")
-def predict(request: ModelInputRequest) -> Union[JSONResponse, List[Dict[str, Any]]]:
+def predict(request: ModelInputRequest):
     camera_id = request.cameraId
     pkl_path = BASE_DIR / 'AI_Models' / f"Camera{camera_id}_tree.pkl"
     if not pkl_path.exists():
         return JSONResponse({"error": f"Model file not found: {pkl_path}"}, status_code=404)
 
-    model = joblib.load(pkl_path)
+    model = joblib.load(pkl_path)  # type: ignore
     features = np.array([
         [
             inp.day_of_week,
