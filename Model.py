@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
+from typing import Dict, Any
 from sklearn import tree
 from fpdf import FPDF
 import pandas as pd
@@ -49,7 +50,7 @@ def plot_tree_regression(model, features, output_file):
 
 # --- Main Model Training Function ---
 
-def train_and_save_model(parameter: int = 0):
+def train_and_save_model(parameter: int = 0) -> Dict[str, Any]:
     """
     Train a RandomForestRegressor on litter data for a specific camera,
     save the model, and optionally plot the trees.
@@ -81,12 +82,12 @@ def train_and_save_model(parameter: int = 0):
     # --- Data Loading ---
     CAMERA_ID = parameter
     query = f"SELECT * FROM litters WHERE CameraId='{CAMERA_ID}'"
-    afval = pd.read_sql(query, engine)
+    afval: pd.DataFrame = pd.read_sql(query, engine)
 
     # --- Data Preprocessing ---
     if 'Type' not in afval.columns:
         raise KeyError("Column 'Type' does not exist in the database table 'litters'.")
-    afval_encoded = pd.get_dummies(afval, columns=['Type'], dtype=int)
+    afval_encoded: pd.DataFrame = pd.get_dummies(afval, columns=['Type'], dtype=int)
     expected_types = ['Type_glass', 'Type_metal', 'Type_organic', 'Type_paper', 'Type_plastic']
     for col in expected_types:
         if col not in afval_encoded.columns:
@@ -99,7 +100,7 @@ def train_and_save_model(parameter: int = 0):
     afval_encoded['weather'] = afval_encoded['Weather'].map(weather_mapping)
 
     # --- Aggregation ---
-    daily_counts = afval_encoded.groupby('date').agg({
+    daily_counts: pd.DataFrame = afval_encoded.groupby('date').agg({
         'IsHoliday': lambda x: 1 if (x == 1).any() else 0,
         'weather': lambda x: x.mode().iloc[0] if not x.mode().empty else np.nan,
         'Type_glass': 'sum',

@@ -5,10 +5,13 @@ import joblib
 import numpy as np
 from pathlib import Path
 from typing import Dict, Any
+from typing import Union
+from typing import Awaitable
 from dotenv import load_dotenv
 from sqlalchemy.sql import select
 from pydantic import BaseModel, Field
 from datetime import datetime, timezone
+from starlette.responses import Response
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import FastAPI, Query, Request
 from typing import Callable, List, Optional
@@ -37,7 +40,7 @@ api_keys = Table(
 
 # --- Middleware ---
 class APIKeyMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: Callable):
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         x_api_key = request.headers.get("X-API-Key")
         if not x_api_key:
             return JSONResponse({"detail": "Missing API key header"}, status_code=401)
@@ -136,7 +139,7 @@ LITTER_TYPES = ["plastic", "paper", "metal", "glass", "organic"]
 
 # --- API Endpoints ---
 @app.post("/predict")
-def predict(request: ModelInputRequest):
+def predict(request: ModelInputRequest) -> Union[JSONResponse, List[Dict[str, Any]]]:
     camera_id = request.cameraId
     pkl_path = BASE_DIR / 'AI_Models' / f"Camera{camera_id}_tree.pkl"
     if not pkl_path.exists():
@@ -155,7 +158,7 @@ def predict(request: ModelInputRequest):
     ], dtype=np.float32)
 
     preds = model.predict(features)
-    results = []
+    results: List[Dict[str, Any]] = []
     for inp, pred_row in zip(request.inputs, preds):
         litter_prediction = {lt: float(pred) for lt, pred in zip(LITTER_TYPES, pred_row)}
         results.append({
