@@ -82,7 +82,7 @@ def build_model_status(train_results: List[Dict[str, Any]]) -> Dict[int, Dict[st
     return {
         int(result["camera"]): {
             "current_rmse": float(result["rmse"]),
-            "last_updated": datetime.now(nl_tz)
+            "last_updated": datetime.now(timezone.utc).astimezone(nl_tz)
         }
         for result in train_results
     }
