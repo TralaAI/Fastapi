@@ -186,7 +186,8 @@ def retrain_model(request: RetrainRequest):
         retrain_result = ModelGenerator.train_and_save_model(request.cameraLocation)
         if not retrain_result or "rmse" not in retrain_result:
             return JSONResponse({"error": "Model retraining failed or invalid result."}, status_code=500)
-        build_model_status([retrain_result])
+        global model_status
+        model_status = build_model_status([retrain_result])
         return JSONResponse({"status": "success"}, status_code=200)
     except FileNotFoundError:
         return JSONResponse({"error": f"Data or model file not found for Camera ID {request.cameraLocation}"}, status_code=404)
