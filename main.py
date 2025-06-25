@@ -3,6 +3,7 @@ import uuid
 import pytz
 import joblib
 import numpy as np
+import pandas as pd
 from pathlib import Path
 from typing import Dict, Any
 from typing import Union
@@ -150,16 +151,14 @@ def predict(request: ModelInputRequest):
         return JSONResponse({"error": f"Failed to load model: {str(e)}"}, status_code=500)
 
     try:
-        features = np.array([
-            [
-                inp.day_of_week,
-                inp.month,
-                int(inp.holiday),
-                inp.weather,
-                inp.temperature_celcius,
-                inp.is_weekend,
-            ] for inp in request.inputs
-        ], dtype=np.float32)
+        features = pd.DataFrame([{
+            "day_of_week": inp.day_of_week,
+            "month": inp.month,
+            "IsHoliday": int(inp.holiday),
+            "weather": inp.weather,
+            "Temperature": inp.temperature_celcius,
+            "is_weekend": inp.is_weekend
+        } for inp in request.inputs])
     except Exception as e:
         return JSONResponse({"error": f"Invalid input data: {str(e)}"}, status_code=400)
 
