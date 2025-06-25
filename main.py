@@ -71,18 +71,12 @@ def get_unique_camera_ids() -> List[int]:
         result = conn.execute(query)
         return [row[0] for row in result.fetchall()]
 
-def get_last_updated_time(camera_id: int) -> Optional[datetime]:
-    model_path = BASE_DIR / 'AI_Models' / f"Camera{camera_id}_tree.pkl"
-    if model_path.exists():
-        return datetime.fromtimestamp(model_path.stat().st_mtime, tz=timezone.utc)
-    return None
-
 def build_model_status(train_results: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
     nl_tz = pytz.timezone("Europe/Amsterdam")
     return {
         int(result["camera"]): {
             "current_rmse": float(result["rmse"]),
-            "last_updated": datetime.now(timezone.utc).astimezone(nl_tz)
+            "last_updated": datetime.now(nl_tz)
         }
         for result in train_results
     }
